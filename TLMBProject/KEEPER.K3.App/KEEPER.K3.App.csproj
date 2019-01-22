@@ -4,11 +4,11 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{B376971B-7E0E-4DF5-9142-AE9EE7C0731C}</ProjectGuid>
+    <ProjectGuid>{B64C48A6-0B35-4422-919D-FEC93DE2DBFC}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>KEEPER.K3.TLMB.CUSTOMER.ServicePlugIn</RootNamespace>
-    <AssemblyName>KEEPER.K3.TLMB.CUSTOMER.ServicePlugIn</AssemblyName>
+    <RootNamespace>KEEPER.K3.App</RootNamespace>
+    <AssemblyName>KEEPER.K3.App</AssemblyName>
     <TargetFrameworkVersion>v4.5.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
   </PropertyGroup>
@@ -51,6 +51,9 @@
     <Reference Include="Kingdee.BOS.ServiceHelper">
       <HintPath>C:\Program Files (x86)\Kingdee\K3Cloud\WebSite\Bin\Kingdee.BOS.ServiceHelper.dll</HintPath>
     </Reference>
+    <Reference Include="Newtonsoft.Json">
+      <HintPath>C:\Program Files (x86)\Kingdee\K3Cloud\WebSite\Bin\Newtonsoft.Json.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />
@@ -61,17 +64,13 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Audit.cs" />
+    <Compile Include="CommonService.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="UnAudit.cs" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="ClassDiagram1.cd" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\KEEPER.K3.TLMB.ServiceHelper\KEEPER.K3.TLMB.ServiceHelper.csproj">
-      <Project>{DCE5AFBD-91F2-4D64-89ED-3C402126CDA9}</Project>
-      <Name>KEEPER.K3.TLMB.ServiceHelper</Name>
+    <ProjectReference Include="..\KEEPER.K3.TLMB.Contracts\KEEPER.K3.TLMB.Contracts.csproj">
+      <Project>{C0A52B70-547D-43A8-94C6-14CF7AFD19A3}</Project>
+      <Name>KEEPER.K3.TLMB.Contracts</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

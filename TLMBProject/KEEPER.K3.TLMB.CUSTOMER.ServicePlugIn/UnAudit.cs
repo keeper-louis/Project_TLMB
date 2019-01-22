@@ -1,24 +1,18 @@
-﻿using Kingdee.BOS.Core.DynamicForm.PlugIn;
+﻿using KEEPER.K3.TLMB.ServiceHelper;
+using Kingdee.BOS.Core.DynamicForm.PlugIn;
+using Kingdee.BOS.Core.DynamicForm.PlugIn.Args;
+using Kingdee.BOS.Orm.DataEntity;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Kingdee.BOS.Core.DynamicForm.PlugIn.Args;
-using Kingdee.BOS.Orm.DataEntity;
-using Kingdee.BOS.App;
-using Kingdee.BOS.Contracts;
-using Kingdee.BOS.ServiceHelper;
-using Kingdee.BOS.Core.Metadata;
-using Kingdee.BOS.Orm;
-using Kingdee.BOS.Core.DynamicForm;
-using KEEPER.K3.TLMB.ServiceHelper;
 
 namespace KEEPER.K3.TLMB.CUSTOMER.ServicePlugIn
 {
-    [Description("客户禁用审批单审核自动禁用对应客户")]
-    public class Audit:AbstractOperationServicePlugIn
+    [Description("客户禁用审批单反审核自动反禁用对应客户")]
+    public class UnAudit:AbstractOperationServicePlugIn
     {
         public override void OnPreparePropertys(PreparePropertysEventArgs e)
         {
@@ -34,7 +28,7 @@ namespace KEEPER.K3.TLMB.CUSTOMER.ServicePlugIn
                 {
                     string custId = Convert.ToString(item["FCUSTID_ID"]);
                     string[] pkIds = new string[] { custId };
-                    TLMBServiceHelper.SetState(this.Context, "BD_Customer", pkIds, "FCUSTID", "T_BD_CUSTOMER", "FForbidStatus", "B");
+                    TLMBServiceHelper.SetState(this.Context, "BD_Customer", pkIds, "FCUSTID", "T_BD_CUSTOMER", "FForbidStatus", "A");
                 }
             }
         }

@@ -2,6 +2,7 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Text;
 using Kingdee.BOS.Resource;
+using System.Web;
 
 namespace UnitTestCloudCallShrOSF
 {
