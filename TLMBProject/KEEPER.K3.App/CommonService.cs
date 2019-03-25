@@ -148,6 +148,61 @@ namespace KEEPER.K3.App
             BusinessDataServiceHelper.SetState(ctx, tableName, fieldName, fieldValue, pkId, ids);
         }
 
-        
+       /// <summary>
+       /// 获取赠品价格集合
+       /// </summary>
+       /// <param name="ctx"></param>
+       /// <param name="fdeliverydate"></param>
+       /// <param name="custId"></param>
+       /// <param name="saleOrgId"></param>
+       /// <returns></returns>
+        public Dictionary<int, double> GetPriceDictionary(Context ctx, string fdeliverydate, long custId, long saleOrgId)
+        {
+            Dictionary<int, double> GiftPrice = new Dictionary<int, double>();
+            string strSq1 = string.Format(@"/*dialect*/with xx as
+ (select zz.*,
+         row_number() over(partition by zz.fmaterialid order by zz.fdefaultpriceo) as group_idx
+    from (select c.fmaterialid, c.fdefaultpriceo
+            from t_sal_pricelist          a,
+                 t_bas_assistantdataentry b,
+                 t_sal_pricelistentry     c,
+                 t_sal_applycustomer      d,
+                 t_bd_unit                e
+           where a.fpricetype = b.fentryid
+             and a.fid = c.fid
+             and a.fid = d.fid
+             and c.fpriceunitid = e.funitid
+             and a.fdocumentstatus = 'C'
+             and a.fforbidstatus = 'A'
+             and c.fforbidstatus = 'A'
+             and c.frowauditstatus = 'A'
+             and a.feffectivedate <= to_date('{0}','yyyy-MM-dd')
+             and a.fexpirydate >= to_date('{0}','yyyy-MM-dd')
+             and c.feffectivedate <= to_date('{0}','yyyy-MM-dd')
+             and c.fexpriydate >= to_date('{0}','yyyy-MM-dd')
+             and a.fsaleorgid = {1}
+             and ((a.flimitcustomer = '2' and
+                 d.fcusttypeid =
+                 (select f.fcusttypeid
+                      from t_bd_customer f
+                     where fcustid = {2})))
+             and a.fpricetype = '57eb5de168e269') zz)
+select * from xx where xx.group_idx = 1
+", fdeliverydate, saleOrgId, custId);
+            DynamicObjectCollection result = DBUtils.ExecuteDynamicObject(ctx, strSq1);
+            if (result!=null&&result.Count()>0)
+            {
+                foreach (DynamicObject item in result)
+                {
+                    GiftPrice.Add(Convert.ToInt32(item["fmaterialid"]), Convert.ToDouble(item["fdefaultpriceo"]));
+                }
+                return GiftPrice;
+            }
+            else
+            {
+                return null;
+            }
+            
+        }
     }
 }

@@ -12,6 +12,11 @@ namespace KEEPER.K3.TLMB.ServiceHelper
 {
     public class TLMBServiceHelper
     {
+        public static Dictionary<int, double> GetPriceDictionary(Context ctx, string fdeliverydate, long custId, long saleOrgId)
+        {
+            ICommonService service = TLMBServiceFactory.GetService<ICommonService>(ctx);
+            return service.GetPriceDictionary(ctx, fdeliverydate, custId, saleOrgId);
+        }
         /// <summary>
         /// 封装基础资料对象
         /// </summary>

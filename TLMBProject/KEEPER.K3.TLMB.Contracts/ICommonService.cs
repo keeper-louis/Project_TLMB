@@ -19,6 +19,18 @@ namespace KEEPER.K3.TLMB.Contracts
     public interface ICommonService
     {
         /// <summary>
+        /// 获取客户对应的通用价目表价格集合
+        /// key:物料ID， value：price
+        /// </summary>
+        /// <param name="ctx"></param>
+        /// <param name="fdeliverydate">到货日期</param>
+        /// <param name="custId">客户ID</param>
+        /// <param name="saleOrgId">销售组织id</param>
+        /// <returns></returns>
+        [OperationContract]
+        [FaultContract(typeof(ServiceFault))]
+        Dictionary<int, double> GetPriceDictionary(Context ctx, string fdeliverydate, long custId, long saleOrgId);
+        /// <summary>
         /// 获取基础资料对象契约
         /// </summary>
         /// <param name="ctx"></param>
