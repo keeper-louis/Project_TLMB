@@ -24,9 +24,11 @@ namespace KEEPER.K3.TLMB.BIGDATA.PValueScheduleServicePlugIn
             DBUtils.Execute(ctx, strSql);
             ClientFactory clientHelper = new ClientFactory();
             JObject jo = new JObject();
-            string Mod_time = DateTime.Now.AddDays(1).ToShortDateString();
+            //string Mod_time = DateTime.Now.AddDays(1).ToShortDateString();
+            //IFormatProvider provider = new 
+            string Mod_time = DateTime.Now.ToString("yyyy-MM-dd");
             jo.Add("modelId", "xgb_toly_01");
-            jo.Add("mod_time", Mod_time);
+            jo.Add("acqTime", Mod_time);
             string result = clientHelper.execute<string>("202325", "ebafe6b2aaf3db31978f71a7cd981de2", jo);
             JObject rss = JObject.Parse(result);
             JArray arry = rss["data"] as JArray;
