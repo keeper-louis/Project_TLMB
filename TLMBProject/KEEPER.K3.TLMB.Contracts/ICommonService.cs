@@ -88,7 +88,7 @@ namespace KEEPER.K3.TLMB.Contracts
         /// <returns></returns>
         void SetState(Context ctx, string FormID, object[] ids, string pkId, string tableName, string fieldName, string fieldValue);
 
-       
+
 
         /// <summary>
         /// 记录日志
@@ -111,5 +111,16 @@ namespace KEEPER.K3.TLMB.Contracts
         [OperationContract]
         [FaultContract(typeof(ServiceFault))]
         DynamicObject installCostRequestPackage(Context ctx, string FormID, Action<IDynamicFormViewService> fillBillPropertys, string BillTypeId);
+
+        /// <summary>
+        /// 获取销售折扣
+        /// </summary>
+        /// <param name="ctx"></param>
+        /// <param name="deptId">销售部门ID</param>
+        /// <param name="Date">业务日期</param>
+        /// <returns></returns>
+        [OperationContract]
+        [FaultContract(typeof(ServiceFault))]
+        Dictionary<string, double> GetDiscounts(Context ctx, long deptId,DateTime Date);
     }
 }
