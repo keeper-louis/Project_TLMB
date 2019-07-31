@@ -103,5 +103,14 @@ namespace KEEPER.K3.TLMB.ServiceHelper
             DynamicObject model = service.installCostRequestPackage(ctx, FormID, fillBillPropertys, "");
             return model;
         }
+
+        public static Dictionary<string, double> GetDiscounts(Context ctx, long deptId, DateTime Date)
+        {
+            ICommonService service = TLMBServiceFactory.GetService<ICommonService>(ctx);
+            //ICommonService service = TLMBNewServiceFactory.GetService<ICommonService>(ctx);
+            //ICommonService service = TLMBServiceFactory.GetService<ICommonService>(ctx);
+            return service.GetDiscounts(ctx, deptId, Date);
+        }
+
     }
 }

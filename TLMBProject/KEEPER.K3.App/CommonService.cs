@@ -142,7 +142,7 @@ namespace KEEPER.K3.App
             Dictionary<string, double> disCounts = new Dictionary<string, double>();
             //0面包，1粽子，2月饼
             //获取部门面包折扣
-            string breadDiscountSql = string.Format(@"select bb.fcategory, bb.fdiscount
+            string breadDiscountSql = string.Format(@"select distinct bb.fcategory, bb.fdiscount
   from paez_salepolicy aa
  inner join paez_salepolicyentry bb
     on aa.fid = bb.fid
@@ -151,18 +151,18 @@ namespace KEEPER.K3.App
           from paez_salepolicy a
          inner join paez_salepolicyentry b
             on a.fid = b.fid
-         where '{0}' >= a.fstartdate
-           and '{0}' <= a.fenddate
+         where to_date('{0}','yyyy/MM/dd') >= a.fstartdate
+           and to_date('{0}','yyyy/MM/dd') <= a.fenddate
            and b.fdeptid = {1}
            and b.fcategory = 0)
-   and bb.fdeptid = {1}",Date,deptId);
+   and bb.fdeptid = {1} and bb.fcategory = 0", Date.ToShortDateString(),deptId);
             DynamicObjectCollection breadDiscounts = DBUtils.ExecuteDynamicObject(ctx, breadDiscountSql);
             if (breadDiscounts!=null&&breadDiscounts.Count()>0)
             {
                 disCounts.Add(Convert.ToString(breadDiscounts[0]["fcategory"]), Convert.ToDouble(breadDiscounts[0]["fdiscount"]));
             }
             //获取部门月饼折扣
-            string moonCakeDiscountSql = string.Format(@"select bb.fcategory, bb.fdiscount
+            string moonCakeDiscountSql = string.Format(@"select distinct bb.fcategory, bb.fdiscount
   from paez_salepolicy aa
  inner join paez_salepolicyentry bb
     on aa.fid = bb.fid
@@ -171,18 +171,18 @@ namespace KEEPER.K3.App
           from paez_salepolicy a
          inner join paez_salepolicyentry b
             on a.fid = b.fid
-         where '{0}' >= a.fstartdate
-           and '{0}' <= a.fenddate
+         where to_date('{0}','yyyy/MM/dd') >= a.fstartdate
+           and to_date('{0}','yyyy/MM/dd') <= a.fenddate
            and b.fdeptid = {1}
            and b.fcategory = 2)
-   and bb.fdeptid = {1}", Date, deptId);
+   and bb.fdeptid = {1} and bb.fcategory = 2", Date.ToShortDateString(), deptId);
             DynamicObjectCollection moonCakeDiscounts = DBUtils.ExecuteDynamicObject(ctx, moonCakeDiscountSql);
             if (moonCakeDiscounts != null && moonCakeDiscounts.Count() > 0)
             {
                 disCounts.Add(Convert.ToString(moonCakeDiscounts[0]["fcategory"]), Convert.ToDouble(moonCakeDiscounts[0]["fdiscount"]));
             }
             //获取部门粽子折扣
-            string ChineseCakeDiscountSql = string.Format(@"select bb.fcategory, bb.fdiscount
+            string ChineseCakeDiscountSql = string.Format(@"select distinct bb.fcategory, bb.fdiscount
   from paez_salepolicy aa
  inner join paez_salepolicyentry bb
     on aa.fid = bb.fid
@@ -191,12 +191,12 @@ namespace KEEPER.K3.App
           from paez_salepolicy a
          inner join paez_salepolicyentry b
             on a.fid = b.fid
-         where '{0}' >= a.fstartdate
-           and '{0}' <= a.fenddate
+         where to_date('{0}','yyyy/MM/dd') >= a.fstartdate
+           and to_date('{0}','yyyy/MM/dd') <= a.fenddate
            and b.fdeptid = {1}
            and b.fcategory = 1)
-   and bb.fdeptid = {1}", Date, deptId);
-            DynamicObjectCollection ChineseCakeDiscounts = DBUtils.ExecuteDynamicObject(ctx, moonCakeDiscountSql);
+   and bb.fdeptid = {1} and bb.fcategory = 1", Date.ToShortDateString(), deptId);
+            DynamicObjectCollection ChineseCakeDiscounts = DBUtils.ExecuteDynamicObject(ctx, ChineseCakeDiscountSql);
             if (ChineseCakeDiscounts != null && ChineseCakeDiscounts.Count() > 0)
             {
                 disCounts.Add(Convert.ToString(ChineseCakeDiscounts[0]["fcategory"]), Convert.ToDouble(ChineseCakeDiscounts[0]["fdiscount"]));
