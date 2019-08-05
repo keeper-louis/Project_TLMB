@@ -12,10 +12,9 @@ using System.Threading.Tasks;
 
 namespace KEEPER.K3.TLMB.Dynamic.DisplayPlugIn
 {
-    [Description("货架陈列动态表单插件")]
-    public class Display: AbstractDynamicFormPlugIn
+    [Description("配送路线图展示")]
+    public class DeliveryLine: AbstractDynamicFormPlugIn
     {
-        
         public override void AfterCreateNewData(EventArgs e)
         {
             long personID = 0;
@@ -45,11 +44,11 @@ namespace KEEPER.K3.TLMB.Dynamic.DisplayPlugIn
             };
 
             Kingdee.BOS.Orm.DataEntity.DynamicObject[] stockObjects = BusinessDataServiceHelper.Load(this.View.Context, formMetaData.BusinessInfo.GetDynamicObjectType(), queryParameter);
-            if (stockObjects.Count()>0)
+            if (stockObjects.Count() > 0)
             {
                 string strSql = string.Format(@"/*dialect*/SELECT FLINKOBJECT FROM T_SEC_USER WHERE FUSERID = {0}", this.View.Context.UserId);
                 personID = DBUtils.ExecuteScalar<long>(this.View.Context, strSql, 0, null);
-                if (personID>0)
+                if (personID > 0)
                 {
                     string searchSql = string.Format(@"SELECT COUNT(1) FROM USER_TABLES WHERE TABLE_NAME = 'TABLE{0}'", personID);
                     int num = DBUtils.ExecuteScalar<int>(this.View.Context, searchSql, 0, null);
@@ -62,17 +61,17 @@ namespace KEEPER.K3.TLMB.Dynamic.DisplayPlugIn
 (
   DEPTID NUMBER(10) not null,
   DEPTNAME   NVARCHAR2(255) not null
-)",personID);
+)", personID);
                     DBUtils.Execute(this.View.Context, createSql);
-                    object[] stockId =  (from c in stockObjects select c[0]).ToArray();
+                    object[] stockId = (from c in stockObjects select c[0]).ToArray();
                     string ids = string.Join(",", stockId);
                     string insertSql = string.Format(@"/*dialect*/INSERT INTO TABLE{0} SELECT DEPT.FDEPTID,DEPTL.FNAME FROM T_BD_DEPARTMENT DEPT INNER JOIN T_BD_DEPARTMENT_L DEPTL ON DEPT.FDEPTID = DEPTL.FDEPTID WHERE DEPT.FDEPTID IN ({1})", personID, ids);
                     DBUtils.Execute(this.View.Context, insertSql);
                 }
-                
+
             }
             JSONObject webobj = new JSONObject();
-            webobj["source"] = string.Format(@"http://221.180.255.112:9000/taoli/action2/delivery_deliveryDisplayWeb.action?orgID={0}&orgName={1}&personID={2}",this.View.Context.CurrentOrganizationInfo.ID,this.View.Context.CurrentOrganizationInfo.Name,personID);
+            webobj["source"] = string.Format(@"http://221.180.255.112:9000/taoli/action2/delivery_deliveryLinebMapWeb.action?orgID={0}&orgName={1}&personID={2}", this.View.Context.CurrentOrganizationInfo.ID, this.View.Context.CurrentOrganizationInfo.Name, personID);
             webobj["height"] = 545;
             webobj["width"] = 810;
             webobj["isweb"] = true;  //是否新弹出一个浏览器窗口（or选项卡）打开网页地址
