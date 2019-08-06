@@ -130,7 +130,7 @@ namespace KEEPER.K3.TLMB.SalReturnToAppConvertPlugIn
                 {
                     DynamicObject dept = srcBillObj["Sledeptid"] as DynamicObject;//销售部门
                     DynamicObject Cust = srcBillObj["RetcustId"] as DynamicObject;//客户
-                    if (Convert.ToInt32(Cust["FSAP"]) == 2 && Convert.ToInt32(dept["FDEPTTYPE"]) == 4)
+                    if ((Convert.ToInt32(Cust["FSAP"]) == 2 || Convert.ToInt32(Cust["FKHBD"]) == 1 || Convert.ToInt32(Cust["FKHBD"]) == 2) && Convert.ToInt32(dept["FDEPTTYPE"]) == 4)
                     {
                         //外埠现金客户执行销售政策折扣
                         Dictionary<string, double> disCounts = TLMBServiceHelper.GetDiscounts(base.Context, Convert.ToInt64(dept["id"]), Convert.ToDateTime(srcBillObj["Date"]));
