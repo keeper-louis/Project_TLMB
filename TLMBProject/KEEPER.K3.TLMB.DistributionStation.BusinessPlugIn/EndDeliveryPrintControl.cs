@@ -16,7 +16,10 @@ namespace KEEPER.K3.TLMB.DistributionStation.BusinessPlugIn
         public override void BarItemClick(BarItemClickEventArgs e)
         {
             base.BarItemClick(e);
+            if (e.BarItemKey.Equals(""))
+            {
 
+            }
         }
     }
 }
