@@ -53,7 +53,7 @@ namespace ZQC.K3.TLMB.KACKD
         #region 实现报表结构
         public override ReportHeader GetReportHeaders(IRptParams filter)
         {
-            
+             
             ReportHeader header = new ReportHeader();
             // 编号
             var seq = header.AddChild("FSEQ", new LocaleValue("序号"));
