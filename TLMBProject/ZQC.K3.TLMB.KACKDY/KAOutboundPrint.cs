@@ -116,24 +116,22 @@ public class KAOutboundPrint : SysReportBaseService
                                              materiall.FNAME,
                                              materiall.FSPECIFICATION,
                                              salentry.FPACKQTY,
-                                             /** FTAXPRICE含税单价*/
                                             outstockentryf.FTAXAMOUNT,
                                              salentry.FREALQTY,
                                              salentry.FPACKERQTY,
                                              salentry.FPRODUCEDATE,
                                              materialstock.FEXPPERIOD,
-                                             salfin.FBILLALLAMOUNT,
-                                            {0}
-                                        
-                                        into {1}     
-                                        from t_Sal_Outstock outstock 
+                                             salfin.FBILLALLAMOUNT
+                               
+                                         from t_Sal_Outstock outstock 
                                         inner  join T_SAL_OUTSTOCKENTRY salentry on outstock.fid = salentry.fid
                                         inner join T_BD_MATERIAL   material on material.fmaterialid= salentry.fentryid
                                         inner join T_BD_MATERIAL_L materiall on material.fmaterialid = materiall.fmaterialid
+										inner join T_SAL_OUTSTOCKFIN salfin on salfin.fid=outstock.fid
+										inner join T_SAL_OUTSTOCKENTRY_F outstockentryf on outstockentryf.fentryid=salfin.fentryid
                                         inner join T_BD_UNIT unit on unit.FUNITID= salentry.funitid
                                         inner join t_BD_MaterialStock materialstock on materialstock.fmaterialid=salentry.fmaterialid
-                                        inner join T_SAL_OUTSTOCKFIN salfin on salfin.fid=outstock.fid;
-                                        ",seqFld,
+                                        ", 
                     
                      tableName);
             DBUtils.ExecuteDynamicObject(this.Context, sql);
@@ -167,18 +165,18 @@ public class KAOutboundPrint : SysReportBaseService
             {
                 result = new ReportTitles();
             }
-            result.AddTitle("F_TL_Outbound", Convert.ToString(dyFilter["F_TL_Outbound"]));
+            result.AddTitle("F_PAEZ_Date", Convert.ToString(dyFilter["F_PAEZ_Date"]));
         }
         return result;
     }
     #endregion
 
 
-    protected override string AnalyzeDspCloumn(IRptParams filter, string tablename)
-    {
-        string result = base.AnalyzeDspCloumn(filter, tablename);
-        return result;
-    }
+    //protected override string AnalyzeDspCloumn(IRptParams filter, string tablename)
+    //{
+    //    string result = base.AnalyzeDspCloumn(filter, tablename);
+    //    return result;
+    //}
     protected override void AfterCreateTempTable(string tablename)
     {
         base.AfterCreateTempTable(tablename);
