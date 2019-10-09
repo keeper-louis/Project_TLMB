@@ -100,7 +100,7 @@ namespace ZQC.K3.TLMB.KACKD
             base.BuilderReportSqlAndTempTable(filter, tableName);
             //拼接过滤条件
            // filter.FilterParameter
-            long deptID = Convert.ToInt64(filter.FilterParameter.CustomFilter["F_PAEZ_OrgId"]);
+            long deptID = Convert.ToInt64(filter.FilterParameter.CustomFilter["FID"]);
             
 
             // 默认排序字段：需要从filter中取用户设置的排序字段
@@ -116,21 +116,21 @@ namespace ZQC.K3.TLMB.KACKD
                                              materiall.FSPECIFICATION,
                                              salentry.FPACKQTY,
                                              /** FTAXPRICE含税单价*/
-                                            outstockentryf.FTAXAMOUNT,
+											 outstockentryf.FTAXAMOUNT,
                                              salentry.FREALQTY,
                                              salentry.FPACKERQTY,
                                              salentry.FPRODUCEDATE,
                                              materialstock.FEXPPERIOD,
-                                             salfin.FBILLALLAMOUNT,
-                                            {0}
-                                        into {1}     
+                                             outstockentryf.FALLAMOUNT
                                         from t_Sal_Outstock outstock 
                                         inner  join T_SAL_OUTSTOCKENTRY salentry on outstock.fid = salentry.fid
                                         inner join T_BD_MATERIAL   material on material.fmaterialid= salentry.fentryid
                                         inner join T_BD_MATERIAL_L materiall on material.fmaterialid = materiall.fmaterialid
+										inner join T_SAL_OUTSTOCKFIN salfin on salfin.fid=outstock.fid
+										inner join T_SAL_OUTSTOCKENTRY_F outstockentryf on outstockentryf.fentryid=salfin.fentryid
                                         inner join T_BD_UNIT unit on unit.FUNITID= salentry.funitid
                                         inner join t_BD_MaterialStock materialstock on materialstock.fmaterialid=salentry.fmaterialid
-                                        inner join T_SAL_OUTSTOCKFIN salfin on salfin.fid=outstock.fid;
+                                        
                                         ",
                          seqFld,
                          tableName);
@@ -165,7 +165,7 @@ namespace ZQC.K3.TLMB.KACKD
                 {
                     result = new ReportTitles();
                 }
-                result.AddTitle("F_TL_Outbound", Convert.ToString(dyFilter["F_TL_Outbound"]));
+                result.AddTitle("PAEZ_TL_KACKDB", Convert.ToString(dyFilter["PAEZ_TL_KACKDB"]));
             }
             return result;
         }
