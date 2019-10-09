@@ -4,11 +4,11 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{F19E2A45-B0D0-4C1E-90C2-279DA2BE6DB4}</ProjectGuid>
+    <ProjectGuid>{4321D0A7-3EC3-4C9E-A7A9-DF4DB622FE37}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>ZQC.K3.TLMB.KACKDYD</RootNamespace>
-    <AssemblyName>ZQC.K3.TLMB.KACKDYD</AssemblyName>
+    <RootNamespace>KEEPER.K3.TLMB.BOXCAP_LINERPT</RootNamespace>
+    <AssemblyName>KEEPER.K3.TLMB.BOXCAP_LINERPT</AssemblyName>
     <TargetFrameworkVersion>v4.5.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
   </PropertyGroup>
@@ -31,38 +31,25 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="Kingdee.BOS">
-      <HintPath>C:\Program Files (x86)\Kingdee\K3Cloud\FileService\Bin\Kingdee.BOS.dll</HintPath>
+      <HintPath>C:\Program Files (x86)\Kingdee\K3Cloud\WebSite\Bin\Kingdee.BOS.dll</HintPath>
     </Reference>
-    <Reference Include="Kingdee.BOS.App, Version=6.2.429.14, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
+    <Reference Include="Kingdee.BOS.App">
       <HintPath>C:\Program Files (x86)\Kingdee\K3Cloud\WebSite\Bin\Kingdee.BOS.App.dll</HintPath>
     </Reference>
-    <Reference Include="Kingdee.BOS.App.Core">
-      <HintPath>C:\Program Files (x86)\Kingdee\K3Cloud\FileService\Bin\Kingdee.BOS.App.Core.dll</HintPath>
-    </Reference>
-    <Reference Include="Kingdee.BOS.App.ServicePlugIn">
-      <HintPath>C:\Program Files (x86)\Kingdee\K3Cloud\FileService\Bin\Kingdee.BOS.App.ServicePlugIn.dll</HintPath>
+    <Reference Include="Kingdee.BOS.BusinessEntity">
+      <HintPath>C:\Program Files (x86)\Kingdee\K3Cloud\WebSite\Bin\Kingdee.BOS.BusinessEntity.dll</HintPath>
     </Reference>
     <Reference Include="Kingdee.BOS.Contracts">
-      <HintPath>C:\Program Files (x86)\Kingdee\K3Cloud\FileService\Bin\Kingdee.BOS.Contracts.dll</HintPath>
+      <HintPath>C:\Program Files (x86)\Kingdee\K3Cloud\WebSite\Bin\Kingdee.BOS.Contracts.dll</HintPath>
     </Reference>
     <Reference Include="Kingdee.BOS.Core">
-      <HintPath>C:\Program Files (x86)\Kingdee\K3Cloud\FileService\Bin\Kingdee.BOS.Core.dll</HintPath>
+      <HintPath>C:\Program Files (x86)\Kingdee\K3Cloud\WebSite\Bin\Kingdee.BOS.Core.dll</HintPath>
     </Reference>
     <Reference Include="Kingdee.BOS.DataEntity">
-      <HintPath>C:\Program Files (x86)\Kingdee\K3Cloud\FileService\Bin\Kingdee.BOS.DataEntity.dll</HintPath>
-    </Reference>
-    <Reference Include="Kingdee.BOS.OrmEngine">
-      <HintPath>C:\Program Files (x86)\Kingdee\K3Cloud\FileService\Bin\Kingdee.BOS.OrmEngine.dll</HintPath>
-    </Reference>
-    <Reference Include="Kingdee.BOS.ServiceFacade.KDServiceClientFx">
-      <HintPath>C:\Program Files (x86)\Kingdee\K3Cloud\FileService\Bin\Kingdee.BOS.ServiceFacade.KDServiceClientFx.dll</HintPath>
+      <HintPath>C:\Program Files (x86)\Kingdee\K3Cloud\WebSite\Bin\Kingdee.BOS.DataEntity.dll</HintPath>
     </Reference>
     <Reference Include="Kingdee.BOS.ServiceHelper">
-      <HintPath>C:\Program Files (x86)\Kingdee\K3Cloud\FileService\Bin\Kingdee.BOS.ServiceHelper.dll</HintPath>
-    </Reference>
-    <Reference Include="Kingdee.K3.Core">
-      <HintPath>C:\Program Files (x86)\Kingdee\K3Cloud\WebSite\bin\Kingdee.K3.Core.dll</HintPath>
+      <HintPath>C:\Program Files (x86)\Kingdee\K3Cloud\WebSite\Bin\Kingdee.BOS.ServiceHelper.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
@@ -74,8 +61,8 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="KAOutboundPrint.cs" />
-    <Compile Include="KAOutBoundReport.cs" />
+    <Compile Include="CustomerReport.cs" />
+    <Compile Include="LineReport.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
