@@ -26,7 +26,7 @@ namespace ZQC.K3.TLMB.KACKD
 
             base.ReportProperty.ReportName = new LocaleValue("KA出库单查询", this.Context.UserLocale.LCID);
             base.Initialize();
-            //base.ReportProperty.IdentityFieldName = "FIDENTITYID"; //顺序字段名
+            base.ReportProperty.IdentityFieldName = "FSeq"; //顺序字段名
             base.ReportProperty.ReportType = ReportType.REPORTTYPE_NORMAL;  //报表类型常量
             base.ReportProperty.IsGroupSummary = true;    //报表是否支持分组汇总
         }
@@ -86,19 +86,23 @@ namespace ZQC.K3.TLMB.KACKD
         #region 实现账表的方法
         public override void BuilderReportSqlAndTempTable(IRptParams filter, string tableName)
         {
-            //this.CreateTempTable();
             base.BuilderReportSqlAndTempTable(filter, tableName);
             //拼接过滤条件
-            // filter.FilterParameter
-            //long deptID = Convert.ToInt64( filter.FilterParameter.CustomFilter["F_PAEZ_OrgId"]);
-            //DateTime dateTime = Convert.ToDateTime(filter.FilterParameter.CustomFilter["F_PAEZ_Date"]);
-
+            DynamicObject dyFilter = filter.FilterParameter.CustomFilter;
+           
             
+            DynamicObject dep = (DynamicObject)filter.FilterParameter.CustomFilter["F_PAEZ_OrgId"];
+            
+            // DynamicObject user = (DynamicObject)filter.FilterParameter.CustomFilter["F_PAEZ_UserId"];
+
+            DateTime date = Convert.ToDateTime(filter.FilterParameter.CustomFilter["F_PAEZ_Date"]);
+
+
 
             // 默认排序字段：需要从filter中取用户设置的排序字段
             string seqFld = string.Format(base.KSQL_SEQ, "salentry.FSEQ");
 
-            // 取数SQL
+           
             // 序号，物料编码，品名，规格，装箱数，含税单价，实发数量，箱数，生产日期 ，保质期 ，结算金额
             string sql = string.Format(@"/*dialect*/
                                    create table {1} as    
@@ -113,81 +117,91 @@ namespace ZQC.K3.TLMB.KACKD
                                              salentry.FPACKERQTY,
                                              salentry.FPRODUCEDATE,
                                              materialstock.FEXPPERIOD,
-                                             outstockentryf.FALLAMOUNT
+                                             outstockentryf.FALLAMOUNT,
+                                             outstock.FSALEORGID
+
                                             
                                         from t_Sal_Outstock outstock 
                                         inner  join T_SAL_OUTSTOCKENTRY salentry on outstock.fid = salentry.fid 
-                                         inner join T_BD_MATERIAL_L materiall on materiall.fmaterialid = salentry.fid                                        
+                                        inner join T_BD_MATERIAL_L materiall on materiall.fmaterialid = salentry.fid                                        
                                         inner join T_SAL_OUTSTOCKENTRY_F outstockentryf on outstockentryf.fentryid=salentry.fentryid
                                         inner join t_BD_MaterialStock materialstock on materialstock.fmaterialid=salentry.fmaterialid
-                                        
+                                        inner join T_ORG_Organizations org on outstock.FSALEORGID = org.forgid
+                                        where 1=1
                                         ",
                          seqFld,
                          tableName);
+            #region 组织过滤
+            if (dep != null)
+        { 
+                string orgId = dep["Id"].ToString();
+                sql = sql + "and org.forgid =  '" + orgId + "'";
+        }
+            #endregion
+
+
+
+
+
             DBUtils.ExecuteDynamicObject(this.Context, sql);
         }
         #endregion
 
 
-        //#region 创建临时表
-        //public static string AddTempTable(Context ctx)
-        //{
-        //    return ServiceHelper.GetService<IDBService>().CreateTemporaryTableName(ctx);
-        //}
-      
-        //private void CreateTempTable()
-        //{
-        //    this.tempTable01 = AddTempTable(base.Context);
-        //    string sqlstr02 = string.Format(@"create table {0}
-        //                                    (FSEQ varchar(1000)
-        //                                    ,FMATERIALID varchar(1000)
-        //                                    ,FNAME varchar(1000)
-        //                                    ,FSPECIFICATION varchar(1000)
-        //                                    ,FPACKQTY varchar(1000)
-        //                                    ,FTAXAMOUNT varchar(1000)
-        //                                    ,FREALQTY varchar(1000)
-        //                                    ,FPACKERQTY varchar(1000)
-        //                                    ,FPRODUCEDATE varchar(1000)
-        //                                    ,FEXPPERIOD varchar(1000)
-        //                                    ,FALLAMOUNT varchar(1000)
-        //                                     )", tempTable01);
-        //    DBUtils.Execute(this.Context, sqlstr02);
-        //}
-        //#endregion
-
-        #region 由索引情况判定是否重写创建账表临时表索引sql
-        protected override string GetIdentityFieldIndexSQL(string tableName)
-        {
-            string result = base.GetIdentityFieldIndexSQL(tableName);
-            return result;
-        }
-        #endregion
-
-        #region 执行sql
-        protected override void ExecuteBatch(List<string> listSql)
-        {
-            base.ExecuteBatch(listSql);
-        }
-        #endregion
+        
 
         #region 给表头赋值
         public override ReportTitles GetReportTitles(IRptParams filter)
         {
-            DynamicObject dep = (DynamicObject)filter.FilterParameter.CustomFilter["F_PAEZ_OrgId"];
-           // DynamicObject user = (DynamicObject)filter.FilterParameter.CustomFilter["F_PAEZ_UserId"];
-            DateTime date=Convert.ToDateTime(filter.FilterParameter.CustomFilter["F_PAEZ_Date"]);
-            string depName = dep["Name"].ToString();
-          //  string userName = user["FNmae"].ToString();
-            
             ReportTitles titles = new ReportTitles();
-            String tableTitle = string.Empty;
-            String tableTitle1 = string.Empty;
-            tableTitle = string.Format((@"{0}出库单"),depName);
-            //tableTitle = string.Format((@"{0}"), userName);
-            tableTitle1 = string.Format((@"{0}"), date);
+            string tableTitle = string.Empty;
+            string tableTitle1 = string.Empty;
+            string tableTitle2 = string.Empty;
+            //组织反写
+            DynamicObject dep = (DynamicObject)filter.FilterParameter.CustomFilter["F_PAEZ_OrgId"];
+            string depName = dep["Name"].ToString();
+            if (dep != null)
+            {
+                tableTitle = depName;
+            }else
+            {
+                tableTitle = "";
+            }
+            //日期反写   存在bug不存在date为空的情况
+            DateTime date = Convert.ToDateTime(filter.FilterParameter.CustomFilter["F_PAEZ_Date"]);
+            string dateName=date.ToString();
+            if (date != null)
+            {
+                tableTitle1 = dateName;
+            }
+            else
+            {
+                tableTitle1 = "";
+            }
+            //用户反写
+            DynamicObject user = (DynamicObject)filter.FilterParameter.CustomFilter["F_PAEZ_UserId"];
+            string userName=user.ToString();
+            if(date!=null)
+            {
+                tableTitle2 = userName;
+            }
+            else
+            {
+                tableTitle2 = "";
+            }
+
             titles.AddTitle("F_PAEZ_OrgId", tableTitle);
-           // titles.AddTitle("F_PAEZ_UserId", tableTitle);
             titles.AddTitle("F_PAEZ_Date", tableTitle1);
+            titles.AddTitle("F_PAEZ_UserId", tableTitle2);
+
+           
+            //string user = filter.FilterParameter.CustomFilter["F_PAEZ_UserId"].ToString();
+            //String tableTitle2 = string.Empty;
+            //tableTitle = string.Format((@"{0}"), userName);
+            //tableTitle2 = string.Format((@"{0}"), user);
+            //titles.AddTitle("F_PAEZ_UserId", tableTitle);
+            //titles.AddTitle("F_PAEZ_UserId", user);
+            //tableTitle1 = string.Format((@"{0}"), date);
 
 
             return titles;
@@ -209,101 +223,5 @@ namespace ZQC.K3.TLMB.KACKD
 
 
 
-        //protected override string AnalyzeDspCloumn(IRptParams filter, string tablename)
-        //{
-        //    string result = base.AnalyzeDspCloumn(filter, tablename);
-        //    return result;
-        //}
-        //protected override void AfterCreateTempTable(string tablename)
-        //{
-        //    base.AfterCreateTempTable(tablename);
-        //}
-
-        #region 报表合计列 暂时不需要
-        /// <summary>
-        /// 设置报表合计列
-        /// </summary>
-        /// <param name="filter"></param>
-        /// <returns></returns>
-        //public override List<SummaryField> GetSummaryColumnInfo(IRptParams filter)
-        //{
-        //    var result = base.GetSummaryColumnInfo(filter);
-        //    result.Add(new SummaryField("FQty", Kingdee.BOS.Core.Enums.BOSEnums.Enu_SummaryType.SUM));
-        //    result.Add(new SummaryField("FALLAMOUNT", Kingdee.BOS.Core.Enums.BOSEnums.Enu_SummaryType.SUM));
-        //    return result;
-        //}
-        #endregion
-
-        //#region 获取合并列sql 暂时不需要
-        //protected override string GetSummaryColumsSQL(List<SummaryField> summaryFields)
-        //{
-        //    var result = base.GetSummaryColumsSQL(summaryFields);
-        //    return result;
-        //}
-        //#endregion
-
-        protected override System.Data.DataTable GetListData(string sSQL)
-        {
-            var result = base.GetListData(sSQL);
-            return result;
-        }
-        protected override System.Data.DataTable GetReportData(IRptParams filter)
-        {
-            var result = base.GetReportData(filter);
-            return result;
-        }
-        protected override System.Data.DataTable GetReportData(string tablename, IRptParams filter)
-        {
-            var result = base.GetReportData(tablename, filter);
-            return result;
-        }
-        public override int GetRowsCount(IRptParams filter)
-        {
-            var result = base.GetRowsCount(filter);
-            return result;
-        }
-        protected override string BuilderFromWhereSQL(IRptParams filter)
-        {
-            string result = base.BuilderFromWhereSQL(filter);
-            return result;
-        }
-        protected override string BuilderSelectFieldSQL(IRptParams filter)
-        {
-            string result = base.BuilderSelectFieldSQL(filter);
-            return result;
-        }
-        protected override string BuilderTempTableOrderBySQL(IRptParams filter)
-        {
-            string result = base.BuilderTempTableOrderBySQL(filter);
-            return result;
-        }
-        public override void CloseReport()
-        {
-            base.CloseReport();
-        }
-       
-        protected override void CreateTempTable(string sSQL)
-        {
-            base.CreateTempTable(sSQL);
-        }
-        public override void DropTempTable()
-        {
-            base.DropTempTable();
-        }
-        public override System.Data.DataTable GetList(IRptParams filter)
-        {
-            var result = base.GetList(filter);
-            return result;
-        }
-        public override List<long> GetOrgIdList(IRptParams filter)
-        {
-            var result = base.GetOrgIdList(filter);
-            return result;
-        }
-        public override List<Kingdee.BOS.Core.Metadata.TreeNode> GetTreeNodes(IRptParams filter)
-        {
-            var result = base.GetTreeNodes(filter);
-            return result;
-        }
     }
 }
