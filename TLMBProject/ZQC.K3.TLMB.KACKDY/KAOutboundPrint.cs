@@ -1,5 +1,7 @@
 ﻿using Kingdee.BOS;
+using Kingdee.BOS.App;
 using Kingdee.BOS.App.Data;
+using Kingdee.BOS.Contracts;
 using Kingdee.BOS.Contracts.Report;
 using Kingdee.BOS.Core.Report;
 using Kingdee.BOS.Orm.DataEntity;
@@ -57,7 +59,7 @@ namespace ZQC.K3.TLMB.KACKD
             var packingQty = header.AddChild("FPACKQTY ", new LocaleValue("装箱数"), SqlStorageType.SqlInt);
             packingQty.ColIndex = 4;
 
-            var price = header.AddChild("FTAXPRICE", new LocaleValue("含税单价"), SqlStorageType.SqlMoney);
+            var price = header.AddChild("FTAXAMOUNT", new LocaleValue("含税单价"), SqlStorageType.SqlMoney);
             price.ColIndex = 5;
 
             var relQty = header.AddChild("FREALQTY", new LocaleValue("实发数量"), SqlStorageType.SqlInt);
@@ -74,7 +76,7 @@ namespace ZQC.K3.TLMB.KACKD
 
 
             //结算金额（含税金额* 实发数量）
-            var amount = header.AddChild("FBILLALLAMOUNT", new LocaleValue("结算金额"), SqlStorageType.SqlMoney);
+            var amount = header.AddChild("FALLAMOUNT", new LocaleValue("结算金额"), SqlStorageType.SqlMoney);
             amount.ColIndex = 10;
 
             return header;
@@ -84,12 +86,14 @@ namespace ZQC.K3.TLMB.KACKD
         #region 实现账表的方法
         public override void BuilderReportSqlAndTempTable(IRptParams filter, string tableName)
         {
-            this.CreateTempTable();
+            //this.CreateTempTable();
             base.BuilderReportSqlAndTempTable(filter, tableName);
             //拼接过滤条件
             // filter.FilterParameter
-            long deptID = Convert.ToInt64(filter.FilterParameter.CustomFilter["F_PAEZ_OrgId"]);
+            //long deptID = Convert.ToInt64( filter.FilterParameter.CustomFilter["F_PAEZ_OrgId"]);
+            //DateTime dateTime = Convert.ToDateTime(filter.FilterParameter.CustomFilter["F_PAEZ_Date"]);
 
+            
 
             // 默认排序字段：需要从filter中取用户设置的排序字段
             string seqFld = string.Format(base.KSQL_SEQ, "salentry.FSEQ");
@@ -97,9 +101,9 @@ namespace ZQC.K3.TLMB.KACKD
             // 取数SQL
             // 序号，物料编码，品名，规格，装箱数，含税单价，实发数量，箱数，生产日期 ，保质期 ，结算金额
             string sql = string.Format(@"/*dialect*/
-                                         
+                                   create table {1} as    
                                           select 
-                                             salentry.FSEQ,
+                                              {0},
                                              salentry.FMATERIALID,
                                              materiall.FNAME,
                                              materiall.FSPECIFICATION,
@@ -109,26 +113,47 @@ namespace ZQC.K3.TLMB.KACKD
                                              salentry.FPACKERQTY,
                                              salentry.FPRODUCEDATE,
                                              materialstock.FEXPPERIOD,
-                                             outstockentryf.FALLAMOUNT,
-                                             {0}
-                                            insert into {1}
+                                             outstockentryf.FALLAMOUNT
+                                            
                                         from t_Sal_Outstock outstock 
-                                        inner  join T_SAL_OUTSTOCKENTRY salentry on outstock.fid = salentry.fid
-                                        inner join T_BD_MATERIAL   material on material.fmaterialid= salentry.fentryid
-                                        inner join T_BD_MATERIAL_L materiall on material.fmasterid = materiall.fmaterialid
+                                        inner  join T_SAL_OUTSTOCKENTRY salentry on outstock.fid = salentry.fid 
+                                         inner join T_BD_MATERIAL_L materiall on materiall.fmaterialid = salentry.fid                                        
                                         inner join T_SAL_OUTSTOCKENTRY_F outstockentryf on outstockentryf.fentryid=salentry.fentryid
                                         inner join t_BD_MaterialStock materialstock on materialstock.fmaterialid=salentry.fmaterialid
+                                        
                                         ",
                          seqFld,
                          tableName);
             DBUtils.ExecuteDynamicObject(this.Context, sql);
         }
-
-        private void CreateTempTable()
-        {
-            throw new NotImplementedException();
-        }
         #endregion
+
+
+        //#region 创建临时表
+        //public static string AddTempTable(Context ctx)
+        //{
+        //    return ServiceHelper.GetService<IDBService>().CreateTemporaryTableName(ctx);
+        //}
+      
+        //private void CreateTempTable()
+        //{
+        //    this.tempTable01 = AddTempTable(base.Context);
+        //    string sqlstr02 = string.Format(@"create table {0}
+        //                                    (FSEQ varchar(1000)
+        //                                    ,FMATERIALID varchar(1000)
+        //                                    ,FNAME varchar(1000)
+        //                                    ,FSPECIFICATION varchar(1000)
+        //                                    ,FPACKQTY varchar(1000)
+        //                                    ,FTAXAMOUNT varchar(1000)
+        //                                    ,FREALQTY varchar(1000)
+        //                                    ,FPACKERQTY varchar(1000)
+        //                                    ,FPRODUCEDATE varchar(1000)
+        //                                    ,FEXPPERIOD varchar(1000)
+        //                                    ,FALLAMOUNT varchar(1000)
+        //                                     )", tempTable01);
+        //    DBUtils.Execute(this.Context, sqlstr02);
+        //}
+        //#endregion
 
         #region 由索引情况判定是否重写创建账表临时表索引sql
         protected override string GetIdentityFieldIndexSQL(string tableName)
@@ -148,31 +173,51 @@ namespace ZQC.K3.TLMB.KACKD
         #region 给表头赋值
         public override ReportTitles GetReportTitles(IRptParams filter)
         {
+            DynamicObject dep = (DynamicObject)filter.FilterParameter.CustomFilter["F_PAEZ_OrgId"];
+           // DynamicObject user = (DynamicObject)filter.FilterParameter.CustomFilter["F_PAEZ_UserId"];
+            DateTime date=Convert.ToDateTime(filter.FilterParameter.CustomFilter["F_PAEZ_Date"]);
+            string depName = dep["Name"].ToString();
+          //  string userName = user["FNmae"].ToString();
+            
+            ReportTitles titles = new ReportTitles();
+            String tableTitle = string.Empty;
+            String tableTitle1 = string.Empty;
+            tableTitle = string.Format((@"{0}出库单"),depName);
+            //tableTitle = string.Format((@"{0}"), userName);
+            tableTitle1 = string.Format((@"{0}"), date);
+            titles.AddTitle("F_PAEZ_OrgId", tableTitle);
+           // titles.AddTitle("F_PAEZ_UserId", tableTitle);
+            titles.AddTitle("F_PAEZ_Date", tableTitle1);
 
-            var result = base.GetReportTitles(filter);
-            DynamicObject dyFilter = filter.FilterParameter.CustomFilter;
-            if (dyFilter != null)
-            {
-                if (result == null)
-                {
-                    result = new ReportTitles();
-                }
-                result.AddTitle("F_TL_Outbound", Convert.ToString(dyFilter["F_TL_Outbound"]));
-            }
-            return result;
+
+            return titles;
         }
         #endregion
 
+        private string FOrgFilter(IRptParams filter)
+        {
 
-        protected override string AnalyzeDspCloumn(IRptParams filter, string tablename)
-        {
-            string result = base.AnalyzeDspCloumn(filter, tablename);
-            return result;
+            long deptID = Convert.ToInt64(filter.FilterParameter.CustomFilter["F_PAEZ_OrgId_Id"]);
+            if (deptID == 0)
+            {
+                return "";
+            }
+            return string.Format("= {0}", deptID);
         }
-        protected override void AfterCreateTempTable(string tablename)
-        {
-            base.AfterCreateTempTable(tablename);
-        }
+
+
+
+
+
+        //protected override string AnalyzeDspCloumn(IRptParams filter, string tablename)
+        //{
+        //    string result = base.AnalyzeDspCloumn(filter, tablename);
+        //    return result;
+        //}
+        //protected override void AfterCreateTempTable(string tablename)
+        //{
+        //    base.AfterCreateTempTable(tablename);
+        //}
 
         #region 报表合计列 暂时不需要
         /// <summary>
@@ -189,13 +234,13 @@ namespace ZQC.K3.TLMB.KACKD
         //}
         #endregion
 
-        #region 获取合并列sql 暂时不需要
-        protected override string GetSummaryColumsSQL(List<SummaryField> summaryFields)
-        {
-            var result = base.GetSummaryColumsSQL(summaryFields);
-            return result;
-        }
-        #endregion
+        //#region 获取合并列sql 暂时不需要
+        //protected override string GetSummaryColumsSQL(List<SummaryField> summaryFields)
+        //{
+        //    var result = base.GetSummaryColumsSQL(summaryFields);
+        //    return result;
+        //}
+        //#endregion
 
         protected override System.Data.DataTable GetListData(string sSQL)
         {
@@ -236,11 +281,7 @@ namespace ZQC.K3.TLMB.KACKD
         {
             base.CloseReport();
         }
-        protected override string CreateGroupSummaryData(IRptParams filter, string tablename)
-        {
-            string result = base.CreateGroupSummaryData(filter, tablename);
-            return result;
-        }
+       
         protected override void CreateTempTable(string sSQL)
         {
             base.CreateTempTable(sSQL);
