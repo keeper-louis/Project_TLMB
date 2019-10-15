@@ -87,22 +87,8 @@ namespace ZQC.K3.TLMB.KACKD
         public override void BuilderReportSqlAndTempTable(IRptParams filter, string tableName)
         {
             base.BuilderReportSqlAndTempTable(filter, tableName);
-            //拼接过滤条件
-            DynamicObject dyFilter = filter.FilterParameter.CustomFilter;
-           
-            
-            DynamicObject dep = (DynamicObject)filter.FilterParameter.CustomFilter["F_PAEZ_OrgId"];
-            
-            // DynamicObject user = (DynamicObject)filter.FilterParameter.CustomFilter["F_PAEZ_UserId"];
-
-            DateTime date = Convert.ToDateTime(filter.FilterParameter.CustomFilter["F_PAEZ_Date"]);
-
-
-
             // 默认排序字段：需要从filter中取用户设置的排序字段
             string seqFld = string.Format(base.KSQL_SEQ, "salentry.FSEQ");
-
-           
             // 序号，物料编码，品名，规格，装箱数，含税单价，实发数量，箱数，生产日期 ，保质期 ，结算金额
             string sql = string.Format(@"/*dialect*/
                                    create table {1} as    
@@ -118,8 +104,11 @@ namespace ZQC.K3.TLMB.KACKD
                                              salentry.FPRODUCEDATE,
                                              materialstock.FEXPPERIOD,
                                              outstockentryf.FALLAMOUNT,
-                                             outstock.FSALEORGID
-
+                                             outstock.FSALEORGID,  
+                                             outstock.FCUSTOMERID,
+                                             to_Date(outstock.FDATE,'yyyy-MM-dd') as FDATE
+                                             
+                                
                                             
                                         from t_Sal_Outstock outstock 
                                         inner  join T_SAL_OUTSTOCKENTRY salentry on outstock.fid = salentry.fid 
@@ -127,21 +116,44 @@ namespace ZQC.K3.TLMB.KACKD
                                         inner join T_SAL_OUTSTOCKENTRY_F outstockentryf on outstockentryf.fentryid=salentry.fentryid
                                         inner join t_BD_MaterialStock materialstock on materialstock.fmaterialid=salentry.fmaterialid
                                         inner join T_ORG_Organizations org on outstock.FSALEORGID = org.forgid
+                                        inner join  T_BD_CUSTOMER  customer on customer.FCUSTID=outstock.FCUSTOMERID
                                         where 1=1
                                         ",
                          seqFld,
                          tableName);
-            #region 组织过滤
+            //组织过滤
+            DynamicObject dep = (DynamicObject)filter.FilterParameter.CustomFilter["F_PAEZ_OrgId"];
             if (dep != null)
         { 
                 string orgId = dep["Id"].ToString();
                 sql = sql + "and org.forgid =  '" + orgId + "'";
-        }
-            #endregion
+            }
+            else
+            {
+                sql = sql + "";
+            }
+            //客户过滤FCUSTOMERID
+            DynamicObject user = (DynamicObject)filter.FilterParameter.CustomFilter["F_PAEZ_UserId"];
 
-
-
-
+            if (user != null)
+            {
+                string userName = user["Id"].ToString();
+                sql=sql+"and outstock.FCUSTOMERID =  '"+userName+"'";
+            }
+            else
+            {
+                sql = sql + "";
+            }
+            //日期过滤
+           string date = Convert.ToDateTime(filter.FilterParameter.CustomFilter["F_PAEZ_Date"]).ToString("yyyy-MM-dd");
+            DateTime dt = DateTime.ParseExact(date, "yyyy-MM-dd", System.Globalization.CultureInfo.CurrentCulture);
+            if (date != null)
+            {
+               sql = sql + "and FDATE = to_date('" + date+"','yyyy-MM-dd')";
+            }else
+            {
+                sql = sql + "";
+            }
 
             DBUtils.ExecuteDynamicObject(this.Context, sql);
         }
@@ -159,9 +171,10 @@ namespace ZQC.K3.TLMB.KACKD
             string tableTitle2 = string.Empty;
             //组织反写
             DynamicObject dep = (DynamicObject)filter.FilterParameter.CustomFilter["F_PAEZ_OrgId"];
-            string depName = dep["Name"].ToString();
+            
             if (dep != null)
             {
+                string depName = dep["Name"].ToString();
                 tableTitle = depName;
             }else
             {
@@ -169,9 +182,10 @@ namespace ZQC.K3.TLMB.KACKD
             }
             //日期反写   存在bug不存在date为空的情况
             DateTime date = Convert.ToDateTime(filter.FilterParameter.CustomFilter["F_PAEZ_Date"]);
-            string dateName=date.ToString();
+            
             if (date != null)
             {
+                string dateName = date.ToString();
                 tableTitle1 = dateName;
             }
             else
@@ -180,9 +194,10 @@ namespace ZQC.K3.TLMB.KACKD
             }
             //用户反写
             DynamicObject user = (DynamicObject)filter.FilterParameter.CustomFilter["F_PAEZ_UserId"];
-            string userName=user.ToString();
-            if(date!=null)
+           
+            if(user!=null)
             {
+                string userName = user["Name"].ToString();
                 tableTitle2 = userName;
             }
             else
@@ -194,34 +209,56 @@ namespace ZQC.K3.TLMB.KACKD
             titles.AddTitle("F_PAEZ_Date", tableTitle1);
             titles.AddTitle("F_PAEZ_UserId", tableTitle2);
 
-           
-            //string user = filter.FilterParameter.CustomFilter["F_PAEZ_UserId"].ToString();
-            //String tableTitle2 = string.Empty;
-            //tableTitle = string.Format((@"{0}"), userName);
-            //tableTitle2 = string.Format((@"{0}"), user);
-            //titles.AddTitle("F_PAEZ_UserId", tableTitle);
-            //titles.AddTitle("F_PAEZ_UserId", user);
-            //tableTitle1 = string.Format((@"{0}"), date);
-
+          
 
             return titles;
         }
         #endregion
 
-        private string FOrgFilter(IRptParams filter)
+        #region 合计
+        public override List<SummaryField> GetSummaryColumnInfo(IRptParams filter)
         {
-
-            long deptID = Convert.ToInt64(filter.FilterParameter.CustomFilter["F_PAEZ_OrgId_Id"]);
-            if (deptID == 0)
-            {
-                return "";
-            }
-            return string.Format("= {0}", deptID);
+            List<SummaryField> list = new List<SummaryField>();
+            list.Add(new SummaryField(string.Format("FREALQTY"), Kingdee.BOS.Core.Enums.BOSEnums.Enu_SummaryType.SUM));
+            list.Add(new SummaryField(string.Format("FPACKERQTY"), Kingdee.BOS.Core.Enums.BOSEnums.Enu_SummaryType.SUM));
+            list.Add(new SummaryField(string.Format("FALLAMOUNT"), Kingdee.BOS.Core.Enums.BOSEnums.Enu_SummaryType.SUM));
+            return list;
         }
-
-
-
+        #endregion
 
 
     }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+//string user = filter.FilterParameter.CustomFilter["F_PAEZ_UserId"].ToString();
+//String tableTitle2 = string.Empty;
+//tableTitle = string.Format((@"{0}"), userName);
+//tableTitle2 = string.Format((@"{0}"), user);
+//titles.AddTitle("F_PAEZ_UserId", tableTitle);
+//titles.AddTitle("F_PAEZ_UserId", user);
+//tableTitle1 = string.Format((@"{0}"), date);
+
+
+
+//private string FOrgFilter(IRptParams filter)
+//{
+
+//    long deptID = Convert.ToInt64(filter.FilterParameter.CustomFilter["F_PAEZ_OrgId_Id"]);
+//    if (deptID == 0)
+//    {
+//        return "";
+//    }
+//    return string.Format("= {0}", deptID);
+//}
+
