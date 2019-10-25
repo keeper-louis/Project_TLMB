@@ -15,8 +15,8 @@ using System.Threading.Tasks;
 
 namespace KEEPER.K3.TLMB.THDPRINT
 {
-    [Description("提货单打印（物料分组）")]
-    public class THDPrintReport:SysReportBaseService
+    [Description("提货单打印ZS（物料分组）")]
+    public class THDPrintZS: SysReportBaseService
     {
         #region 参数设置
         private string tempTable00 = string.Empty;
