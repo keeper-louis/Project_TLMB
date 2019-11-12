@@ -115,7 +115,7 @@ namespace ZQC.K3.TLMB.DirectTransform.BusinessPlugIn
 
 
             #region 对调拨类型监听，删除仓库
-            if (key == "FALLOCATETYPE" && e.NewValue != null)
+            if ((key == "FALLOCATETYPE" && e.NewValue != null) || (key == "FSALEDEPTID" && e.NewValue != null) )
             {
                 DynamicObject org = this.Model.GetValue("FStockOrgId") as DynamicObject;
                 string orgId = Convert.ToString(org["Id"]);
