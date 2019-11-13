@@ -109,13 +109,14 @@ namespace ZQC.K3.TLMB.SalOrderToDirectConvertPlugin
                         FormMetadata Meta = metaService.Load(base.Context, "BD_MATERIAL") as FormMetadata;//获取基础资料元数据
                         DynamicObject BasicObject = view.LoadSingle(base.Context, result, Meta.BusinessInfo.GetDynamicObjectType());
                         // 填写字段值
-                        DynamicObjectCollection materialBase = BasicObject["MaterialBase"] as DynamicObjectCollection;
+                        DynamicObjectCollection materialBase = BasicObject["MaterialStock"] as DynamicObjectCollection;
                         foreach (DynamicObject base1 in materialBase)
                         {
-                            DynamicObject unit = base1["BaseUnitId"] as DynamicObject;
+                            DynamicObject unit = base1["StoreUnitID"] as DynamicObject;
                             newRow["MaterialId"] = BasicObject;
                             newRow["QTY"] = slamount;
                             newRow["UnitId"] = unit;
+                            newRow["Seq"] = directEntry.Count;
                         }
 
                     }
@@ -137,13 +138,14 @@ namespace ZQC.K3.TLMB.SalOrderToDirectConvertPlugin
                         FormMetadata Meta = metaService.Load(base.Context, "BD_MATERIAL") as FormMetadata;//获取基础资料元数据
                         DynamicObject BasicObject = view.LoadSingle(base.Context, result, Meta.BusinessInfo.GetDynamicObjectType());
                         // 填写字段值
-                        DynamicObjectCollection materialBase =  BasicObject["MaterialBase"] as DynamicObjectCollection;
+                        DynamicObjectCollection materialBase =  BasicObject["MaterialStock"] as DynamicObjectCollection;
                         foreach(DynamicObject base1 in materialBase)
                         {
-                            DynamicObject unit = base1["BaseUnitId"] as DynamicObject;
+                            DynamicObject unit = base1["StoreUnitID"] as DynamicObject;
                             newRow["MaterialId"] = BasicObject;
                             newRow["QTY"] = pmamount;
                             newRow["UnitId"] = unit;
+                            newRow["Seq"] = directEntry.Count;
                         }
                         
                        
