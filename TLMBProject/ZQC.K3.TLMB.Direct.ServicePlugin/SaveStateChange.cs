@@ -57,8 +57,11 @@ namespace ZQC.K3.TLMB.Direct.ServicePlugin
                             {
                                 //string updateStr = string.Format(@"/*dialect*/Update T_STK_MISCELLANEOUSENTRY set FSTOCKSTATUSID = {0} where fentryid = {1}", result, Convert.ToInt64(entityInfo[i]["Id"]));
                                 //DBUtils.Execute(base.Context, updateStr);
-                                entityInfo[i]["STOCKSTATUSID_Id"] = result;
-                                entityInfo[i]["STOCKSTATUSID"] = BasicObject;
+                                entityInfo[i]["SrcStockStatusId"] = BasicObject;
+                                entityInfo[i]["SrcStockStatusId_Id"] = result;
+                                entityInfo[i]["DestStockStatusId"] = BasicObject;
+                                entityInfo[i]["DestStockStatusId_Id"] = result;
+
                             }
 
                         }
