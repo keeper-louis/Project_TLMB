@@ -128,10 +128,11 @@ namespace KEEPER.K3.TLMB.SalOutToAppConvertPlugIn
                     DynamicObject dept = srcBillObj["SaleDeptID"] as DynamicObject;//销售部门
                     DynamicObject Cust = srcBillObj["CustomerID"] as DynamicObject;//客户
                     //bool isRight = !Cust["FKHBD"].Equals("1") && !Cust["FKHBD"].Equals("2") ? Convert.ToInt32(Cust["FSAP"]) == 2 : Convert.ToInt32(Cust["FKHBD"]) == 1 ? true: Convert.ToInt32(Cust["FKHBD"]) == 2 ? true:false;
-
+                    //补差、丢货或者客户结算方式是现金
                     bool isRight = (Cust["FKHBD"].Equals("1") || Cust["FKHBD"].Equals("2")) ? true : Convert.ToInt32(Cust["FSAP"]) == 2 ? true : false;
                     //if ((Convert.ToInt32(Cust["FSAP"]) == 2 || Convert.ToInt32(Cust["FKHBD"]) == 1 || Convert.ToInt32(Cust["FKHBD"]) == 2) && Convert.ToInt32(dept["FDEPTTYPE"]) == 4)
-                    if (isRight && Convert.ToInt32(dept["FDEPTTYPE"]) == 4)
+
+                    if (isRight && Convert.ToInt32(dept["FDEPTTYPE"]) == 4)//部门类别外埠
                         {
                         //外埠现金客户执行销售政策折扣
                         Dictionary<string, double> disCounts = TLMBServiceHelper.GetDiscounts(base.Context, Convert.ToInt64(dept["id"]), Convert.ToDateTime(srcBillObj["Date"]));
