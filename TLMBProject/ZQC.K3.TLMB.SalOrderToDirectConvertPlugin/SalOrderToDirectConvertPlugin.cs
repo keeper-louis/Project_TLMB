@@ -14,6 +14,7 @@ using Kingdee.BOS.Core.Metadata;
 using Kingdee.BOS.Contracts;
 using Kingdee.BOS.App;
 using Kingdee.BOS.App.Data;
+using Kingdee.BOS.Core.Metadata.FieldElement;
 
 namespace ZQC.K3.TLMB.SalOrderToDirectConvertPlugin
 {
@@ -96,32 +97,91 @@ namespace ZQC.K3.TLMB.SalOrderToDirectConvertPlugin
                 if (slamount != 0)
                 {
                     // 目标单添加新行，并接受源单字段值
-                    DynamicObject newRow = new DynamicObject(entryEnd.DynamicObjectType);
+                    DynamicObject newRow = new DynamicObject(mainEntity.DynamicObjectType);
                     directEntry.Add(newRow);
                     //根据组织查询对应 箱套
                     string sql = string.Format(@"select fmaterialid from t_bd_material where fnumber='07040000' and fuseorgid={0}", orgId);
                     long result = DBUtils.ExecuteScalar<long>(base.Context, sql, -1, null);
+                    //调入货主类型 string
+                    string ownerType = Convert.ToString(item["OwnerTypeIdHead"]);
+                    //调出货主类型 string
+                    string ownerOutType = Convert.ToString(item["OwnerTypeOutIdHead"]);
+                    //调入货主 DynamicObject
+                    DynamicObject owner = item["OwnerIdHead"] as DynamicObject;
+                    //调出货主 DynamicObject
+                    DynamicObject ownerOut = item["OwnerOutIdHead"] as DynamicObject;
+                    //调入保管者类型
+                    string keeperType = item["OwnerTypeIdHead"] as string;
+                    //调出保管者类型
+                    string keeperOutType = entryEnd["KeeperTypeId"] as string;
+                    //调入保管者 
+                    DynamicObject keeper = entryEnd["KeeperId"] as DynamicObject;
+                    //调出保管者
+                    DynamicObject keeperOut = entryEnd["KeeperOutId"] as DynamicObject;
+                    //调拨数量基本单位  BaseQty
+                    decimal baseQty = Convert.ToDecimal( entryEnd["BaseQty"]); 
+
                     //组织基础资料对象
-                    if(result !=0 && result != -1)
+                    if (result !=0 && result != -1)
                     {
                         IMetaDataService metaService = ServiceHelper.GetService<IMetaDataService>();//元数据服务
                         IViewService view = ServiceHelper.GetService<IViewService>();//界面服务
                         FormMetadata Meta = metaService.Load(base.Context, "BD_MATERIAL") as FormMetadata;//获取基础资料元数据
                         DynamicObject BasicObject = view.LoadSingle(base.Context, result, Meta.BusinessInfo.GetDynamicObjectType());
+                        //物料ID
+                        long materialId = Convert.ToInt64(BasicObject["Id"]);
                         // 填写字段值
-                        DynamicObjectCollection materialBase = BasicObject["MaterialStock"] as DynamicObjectCollection;
-                        foreach (DynamicObject base1 in materialBase)
+                        DynamicObjectCollection materialStock = BasicObject["MaterialStock"] as DynamicObjectCollection;
+                        DynamicObjectCollection materialBase = BasicObject["MaterialBase"] as DynamicObjectCollection;
+
+                        //基本单位
+                        foreach(DynamicObject base2 in materialBase)
+                        {
+                            DynamicObject baseUnit = base2["BaseUnitId"] as DynamicObject;
+                            newRow["BaseUnitId"] =baseUnit;
+                        }
+                        //单位  物料   
+                        foreach (DynamicObject base1 in materialStock)
                         {
                             DynamicObject unit = base1["StoreUnitID"] as DynamicObject;
+                            long unitId = Convert.ToInt64(unit["Id"]);
                             newRow["MaterialId"] = BasicObject;
+                            newRow["MaterialId_Id"] = materialId;
                             newRow["QTY"] = slamount;
                             newRow["UnitId"] = unit;
+                            newRow["UnitId_Id"] = unitId;
                             newRow["Seq"] = directEntry.Count;
+
+
+
+                            //调入货主
+                            newRow["OwnerId"] = owner;
+                            //调入货主类型
+                            newRow["OwnerTypeId"] = ownerType;
+                            //调处货主
+                            newRow["FOwnerOutId"] = ownerOut;
+                            //调出货主类型
+                            newRow["OwnerTypeOutId"] = ownerOutType;
+                            //调入保管者类型
+                            newRow["KeeperTypeId"] = keeperOutType;
+                            //调出保管者类型
+                            newRow["KeeperTypeOutId"] = keeperOutType;
+                            //调入保管者
+                            newRow["KeeperId"] = owner;
+                            //调出保管者
+                            newRow["KeeperOutId"] = ownerOut;
+                            //调出数量（基本单位）
+                            newRow["BaseQty"] = baseQty;
                         }
 
                     }
 
                 }
+
+
+
+
+
                 if(pmamount != 0)
                 {
                     // 目标单添加新行
@@ -137,14 +197,19 @@ namespace ZQC.K3.TLMB.SalOrderToDirectConvertPlugin
                         IViewService view = ServiceHelper.GetService<IViewService>();//界面服务
                         FormMetadata Meta = metaService.Load(base.Context, "BD_MATERIAL") as FormMetadata;//获取基础资料元数据
                         DynamicObject BasicObject = view.LoadSingle(base.Context, result, Meta.BusinessInfo.GetDynamicObjectType());
+                        //物料ID
+                        long materialId = Convert.ToInt64(BasicObject["Id"]);
                         // 填写字段值
-                        DynamicObjectCollection materialBase =  BasicObject["MaterialStock"] as DynamicObjectCollection;
-                        foreach(DynamicObject base1 in materialBase)
+                        DynamicObjectCollection materialStock =  BasicObject["MaterialStock"] as DynamicObjectCollection;
+                        foreach(DynamicObject base1 in materialStock)
                         {
                             DynamicObject unit = base1["StoreUnitID"] as DynamicObject;
+                            long unitId = Convert.ToInt64(unit["Id"]);
                             newRow["MaterialId"] = BasicObject;
+                            newRow["MaterialId_Id"] = materialId;
                             newRow["QTY"] = pmamount;
                             newRow["UnitId"] = unit;
+                            newRow["UnitId_Id"] = unitId;
                             newRow["Seq"] = directEntry.Count;
                         }
                         

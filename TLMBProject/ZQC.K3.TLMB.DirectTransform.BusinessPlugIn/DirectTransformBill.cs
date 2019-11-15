@@ -125,17 +125,17 @@ namespace ZQC.K3.TLMB.DirectTransform.BusinessPlugIn
                 string sql0 = string.Format(@"select FdeptId from T_BD_DEPARTMENT_L where fname like '%分销站%' ");
                 DynamicObjectCollection result1 = DBUtils.ExecuteDynamicObject(this.Context, sql0);
                 string transType = this.Model.GetValue("FAllocateType") as string;
-                if (transType != null && transType != "0")
-                {
-                    int row = this.Model.GetEntryRowCount("FBillEntry");
-                    for (int i = 0; i < row; i++)
-                    {
-                        //DynamicObject stockId = this.Model.GetValue("FSTOCKID") as DynamicObject;
-                        this.Model.SetValue("FDestStockId", null, i);
-                        this.Model.SetValue("FSRCSTOCKID", null, i);
-                    }
+                //if (transType != null && transType != "0")
+                //{
+                //    int row = this.Model.GetEntryRowCount("FBillEntry");
+                //    for (int i = 0; i < row; i++)
+                //    {
+                //        //DynamicObject stockId = this.Model.GetValue("FSTOCKID") as DynamicObject;
+                //        this.Model.SetValue("FDestStockId", null, i);
+                //        this.Model.SetValue("FSRCSTOCKID", null, i);
+                //    }
 
-                }
+                //}
 
                 if (transType != null && transType == "0")
                 {

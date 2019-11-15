@@ -145,6 +145,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "DirectTransform", "DirectTr
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ZQC.K3.TLMB.DirectTransform.BusinessPlugIn", "ZQC.K3.TLMB.DirectTransform.BusinessPlugIn\ZQC.K3.TLMB.DirectTransform.BusinessPlugIn.csproj", "{3F9D9C3E-ED3C-4D6D-8A8E-4817EC7A8811}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ZQC.K3.TLMB.SalOutStock.BussinessPlugIn", "ZQC.K3.TLMB.SalOutStock.BussinessPlugIn\ZQC.K3.TLMB.SalOutStock.BussinessPlugIn.csproj", "{BDFFB3B1-0972-470E-AFBE-A4FE1B77C9EC}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -287,6 +289,10 @@ Global
 		{3F9D9C3E-ED3C-4D6D-8A8E-4817EC7A8811}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{3F9D9C3E-ED3C-4D6D-8A8E-4817EC7A8811}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{3F9D9C3E-ED3C-4D6D-8A8E-4817EC7A8811}.Release|Any CPU.Build.0 = Release|Any CPU
+		{BDFFB3B1-0972-470E-AFBE-A4FE1B77C9EC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BDFFB3B1-0972-470E-AFBE-A4FE1B77C9EC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BDFFB3B1-0972-470E-AFBE-A4FE1B77C9EC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BDFFB3B1-0972-470E-AFBE-A4FE1B77C9EC}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -358,5 +364,6 @@ Global
 		{1DD563D6-7C9F-4776-BE59-3ECDA94E79F3} = {E1C8C29B-5BB3-45C7-BD31-E6DB10BB9A8C}
 		{6EFA155C-9ED5-47B0-9D62-F789D9543A7C} = {4DCB4EE1-CF47-4265-81CD-1180E686FEB6}
 		{3F9D9C3E-ED3C-4D6D-8A8E-4817EC7A8811} = {6EFA155C-9ED5-47B0-9D62-F789D9543A7C}
+		{BDFFB3B1-0972-470E-AFBE-A4FE1B77C9EC} = {F4061FBA-78C3-47AA-B4CB-FB514B75688A}
 	EndGlobalSection
 EndGlobal
