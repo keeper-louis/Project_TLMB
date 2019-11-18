@@ -4,11 +4,11 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{BDFFB3B1-0972-470E-AFBE-A4FE1B77C9EC}</ProjectGuid>
+    <ProjectGuid>{DBC20F22-E501-4BEA-A804-F3BB1DB9DE24}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>ZQC.K3.TLMB.SalOutStock.BussinessPlugIn</RootNamespace>
-    <AssemblyName>ZQC.K3.TLMB.SalOutStock.BussinessPlugIn</AssemblyName>
+    <RootNamespace>ZQC.K3.TLMB.SalOutStock.BillPlugIn</RootNamespace>
+    <AssemblyName>ZQC.K3.TLMB.SalOutStock.BillPlugIn</AssemblyName>
     <TargetFrameworkVersion>v4.5.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
   </PropertyGroup>
@@ -45,6 +45,10 @@
     <Reference Include="Kingdee.BOS.DataEntity">
       <HintPath>C:\Program Files (x86)\Kingdee\K3Cloud\WebSite\Bin\Kingdee.BOS.DataEntity.dll</HintPath>
     </Reference>
+    <Reference Include="Kingdee.BOS.ServiceHelper, Version=6.2.429.14, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>C:\Program Files (x86)\Kingdee\K3Cloud\WebSite\Bin\Kingdee.BOS.ServiceHelper.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />
@@ -55,7 +59,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="salOutSaveChange.cs" />
+    <Compile Include="CustomerBoxAmount.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
