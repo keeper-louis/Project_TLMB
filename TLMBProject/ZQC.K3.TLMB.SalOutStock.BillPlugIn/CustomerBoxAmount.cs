@@ -47,12 +47,8 @@ namespace ZQC.K3.TLMB.SalOutStock.BussinessPlugIn
                     long custoId = Convert.ToInt64(custo["FCUSTID"]);
                     if ( custoId == customerId)
                     {
-                        this.Model.GetValue("");
-                        this.Model.GetValue("FEntity");
-                        this.Model.BillBusinessInfo.GetEntity("FEntity");
-                        DynamicObjectCollection entrys = this.Model.GetValue("FEntity") as DynamicObjectCollection;
-
-                        this.Model.GetEntryRowCount("FEntity");
+                        DynamicObject billObj = this.Model.DataObject;
+                        DynamicObjectCollection entrys = billObj["SAL_OUTSTOCKENTRY"] as DynamicObjectCollection;
                         for (int i = 0; i < entrys.Count; i++)
                         {
                             //获取每一个分录
@@ -68,10 +64,24 @@ namespace ZQC.K3.TLMB.SalOutStock.BussinessPlugIn
                             if(pmxAmount != 0)
                             {
                                 pmx = pmx + pmxAmount;
-                            } 
+                                
+                            }
                         }
-                        this.Model.BatchCreateNewEntryRow("FSLXQTY", 1);
+                        //this.View.Model.CreateNewEntryRow("FEntity");//新增
+                        //根据组织查询对应 箱套
+                        string sql2 = string.Format(@"select fmaterialid from t_bd_material where fnumber='07040000' and fuseorgid={0}", useOrgId);
+                        long result = DBUtils.ExecuteScalar<long>(base.Context, sql2, -1, null);
+                        if (result != 0 && result != -1)
+                        {
+                            IMetaDataService metaService = ServiceHelper.GetService<IMetaDataService>();//元数据服务
+                            IViewService view = ServiceHelper.GetService<IViewService>();//界面服务
+                            FormMetadata Meta = metaService.Load(base.Context, "BD_MATERIAL") as FormMetadata;//获取基础资料元数据
+                            DynamicObject BasicObject = view.LoadSingle(base.Context, result, Meta.BusinessInfo.GetDynamicObjectType());
+                            this.Model.BatchCreateNewEntryRow("FEntity",1);
+                            this.Model.SetValue("MaterialId", BasicObject,entrys.Count);
+                        }
 
+                           
 
                     }
                     

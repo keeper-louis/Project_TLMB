@@ -4,6 +4,7 @@ using Kingdee.BOS.App.Data;
 using Kingdee.BOS.Contracts;
 using Kingdee.BOS.Contracts.Report;
 using Kingdee.BOS.Core.Report;
+using Kingdee.BOS.Orm.DataEntity;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -85,6 +86,60 @@ namespace KEEPER.K3.TLMB.BOXCAP_FACTORY_DAYRPT
             //     {2}
             //from {1}", tableName, tempTable, KSQL_SEQ);
             DBUtils.Execute(base.Context, strsql);
+
+
+            #region  ZQC
+            //过滤条件
+            DynamicObject dyFilter = filter.FilterParameter.CustomFilter;
+            //获取当前库存组织
+            DynamicObject nowOrg = dyFilter["F_PAEZ_OrgId"] as DynamicObject;
+            long nowOrgId = Convert.ToInt64(nowOrg["Id"]);
+            //获取发出仓库
+            DynamicObject outStock = dyFilter["F_PAEZ_OutWareHouse"] as DynamicObject;
+            long outStockId = Convert.ToInt64(outStock["Id"]);
+            //获取返箱仓库
+            DynamicObject returnStock = dyFilter["F_PAEZ_InWareHouse"] as DynamicObject;
+            long returnStockId = Convert.ToInt64(returnStock["Id"]);
+            //当前日期月份
+            DateTime nowDate = Convert.ToDateTime(dyFilter["F_PAEZ_Date"]);
+            int nowYear = Convert.ToInt32(nowDate.Year);
+            int nowMouth = Convert.ToInt32(nowDate.Month);
+            int nowDay = Convert.ToInt32(nowDate.Day);
+            string nowYearString = Convert.ToString(nowYear);
+            string nowMouthString = Convert.ToString(nowMouth);
+            string nowDayString = Convert.ToString(nowDay);
+            string nowDateString = nowYearString + "/" + nowMouthString + "/" + nowDayString;
+            //上月日期月份
+            int lastYear = nowYear - 1;
+            int lastMouth;
+            string lastYearString;
+            string lastMouthString;
+            string lastString;
+            //所选日期月份
+            string selectString;
+            selectString = nowYear + "/" + nowMouth + "/" + 20;//选择月第20号
+            DateTime last;
+            DateTime select = Convert.ToDateTime(selectString);
+            //如果月份为1月，年份减一 12月
+            if (nowMouth <= 1)
+            {
+                lastMouth = 12;
+                lastYearString = Convert.ToString(lastYear);
+                lastMouthString = Convert.ToString(lastMouth);
+                lastString = Convert.ToString(lastYearString + "/" + lastMouthString + "/" + 21);
+                last = Convert.ToDateTime(lastString);
+            }
+            else
+            {
+                lastMouth = nowMouth - 1;
+                lastYearString = Convert.ToString(nowYear);
+                lastMouthString = Convert.ToString(lastMouth);
+                lastString = Convert.ToString(lastYearString + "/" + lastMouthString + "/" + 21);
+                last = Convert.ToDateTime(lastString);
+            }
+
+            #endregion
+
 
         }
 
