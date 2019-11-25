@@ -137,7 +137,15 @@ namespace KEEPER.K3.TLMB.BOXCAP_FACTORY_DAYRPT
                 lastString = Convert.ToString(lastYearString + "/" + lastMouthString + "/" + 21);
                 last = Convert.ToDateTime(lastString);
             }
-
+            string sql = string.Format(@"/*dialect*/ select/*直接调拨单*/ d1.FSALEDEPTID ,d2.FSRCMATERIALID,sum(d2.FQTY) as sum1                 /*销售部门，物料编码，sum(调拨数量) */
+                                                        from T_STK_STKTRANSFERIN d1                                                       /*直接调拨单单据头*/
+                                                        inner join T_STK_STKTRANSFERINENTRY d2 on d2.fid = d1.fid                         /*直接调拨单单据体*/
+                                                        where d1.FSTOCKOUTORGID = {3}  and d1.FDATE < to_Date ('{0}','yyyy/MM/dd')
+                                                              and （d1.FALLOCATETYPE =0 or  d1.FALLOCATETYPE=1)                           /*调拨类型 */
+                                                              and  d2.FSRCSTOCKID={2}                                                     /*调出仓库*/
+                                                              and (d2.FSRCMATERIALID=07040000 or d2.FSRCMATERIALID=07040004)
+                                                              group by d1.FSALEDEPTID,d2.FSRCMATERIALID
+", nowDateString, selectString, outStockId, nowOrgId, returnStockId);
             #endregion
 
 

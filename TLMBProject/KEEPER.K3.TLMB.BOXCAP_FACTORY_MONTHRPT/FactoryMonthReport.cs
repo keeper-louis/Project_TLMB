@@ -144,7 +144,7 @@ namespace KEEPER.K3.TLMB.BOXCAP_FACTORY_MONTHRPT
                                                         where d1.FSTOCKOUTORGID = {3}  and d1.FDATE >= to_Date ('{0}','yyyy/MM/dd') and d1.FDATE <= to_Date('{1}','yyyy/MM/dd')  /*上月日期与选择日期*/
                                                               and （d1.FALLOCATETYPE =0 or  d1.FALLOCATETYPE=1)                           /*调拨类型 */
                                                               and  d2.FSRCSTOCKID={2}                                                     /*调出仓库*/
-                                                              and (d2.FSRCMATERIALID=07040000 or d2.FSRCMATERIALID=07040004)
+                                                              and (d2.FSRCMATERIALID=2394565 or d2.FSRCMATERIALID=2394566)
                                                               group by d1.FSALEDEPTID,d2.FSRCMATERIALID
                                                    union all 
                                                       select/*销售出库单KA客户*/  s1.FCUSTOMERID,s2.FMATERIALID,sum(s2.FREALQTY)
@@ -152,7 +152,7 @@ namespace KEEPER.K3.TLMB.BOXCAP_FACTORY_MONTHRPT
                                                         inner join T_SAL_OUTSTOCKENTRY s2 on s1.fid=s2.fid
                                                         where s1.FSALEORGID = {3} and  s1.FDATE >= to_Date ('{0}','yyyy/MM/dd') and s1.FDATE <= to_Date('{1}','yyyy/MM/dd')
                                                               and s2.FSTOCKID = {2}
-                                                              and (s2.FMATERIALID=07040000 or s2.FMATERIALID=07040004)
+                                                              and (s2.FMATERIALID=2394565 or s2.FMATERIALID=2394566)
                                                               group by s1.FCUSTOMERID,s2.FMATERIALID
                                                    union all
                                                       select/*销售出库单分公司*/  t1.FCUSTOMERID,t2.FMATERIALID,sum(t2.FREALQTY)
@@ -160,7 +160,7 @@ namespace KEEPER.K3.TLMB.BOXCAP_FACTORY_MONTHRPT
                                                         inner join T_SAL_OUTSTOCKENTRY t2 on t1.fid=t2.fid
                                                         where t1.FSALEORGID = {3} and  t1.FDATE >= to_Date ('{0}','yyyy/MM/dd') and t1.FDATE <= to_Date('{1}','yyyy/MM/dd')
                                                               and t2.FSTOCKID = {2}
-                                                              and (t2.FMATERIALID=07040000 or t2.FMATERIALID=07040004)
+                                                              and (t2.FMATERIALID=2394565 or t2.FMATERIALID=2394566)
                                                               and t1.FSALEDEPTID = 0/*工厂*/
                                                               group by t1.FCUSTOMERID,t2.FMATERIALID
                                         
@@ -173,7 +173,7 @@ namespace KEEPER.K3.TLMB.BOXCAP_FACTORY_MONTHRPT
                                                         where d1.FSTOCKOUTORGID = {3}  and d1.FDATE >= to_Date ('{0}','yyyy/MM/dd') and d1.FDATE <= to_Date('{1}','yyyy/MM/dd')  /*上月日期与选择日期*/
                                                               and （d1.FALLOCATETYPE =0 or  d1.FALLOCATETYPE=4)                           /*调拨类型 */
                                                               and  d2.FSRCSTOCKID={2}                                                     /*调出仓库*/
-                                                              and (d2.FSRCMATERIALID=07040000 or d2.FSRCMATERIALID=07040004)
+                                                              and (d2.FSRCMATERIALID=2394565 or d2.FSRCMATERIALID=2394566)
                                                               group by d1.FSALEDEPTID,d2.FSRCMATERIALID
                                                    union all 
                                                       select/*销售退货*/  s1.FRETCUSTID,s2.FMATERIALID,sum(s2.FREALQTY)
@@ -181,7 +181,7 @@ namespace KEEPER.K3.TLMB.BOXCAP_FACTORY_MONTHRPT
                                                         inner join T_SAL_RETURNSTOCKENTRY s2 on s1.fid=s2.fid
                                                         where s1.FSALEORGID = {3} and  s1.FDATE >= to_Date ('{0}','yyyy/MM/dd') and s1.FDATE <= to_Date('{1}','yyyy/MM/dd')
                                                               and s2.FSTOCKID = {2}
-                                                              and (s2.FMATERIALID=07040000 or s2.FMATERIALID=07040004)
+                                                              and (s2.FMATERIALID=2394565 or s2.FMATERIALID=2394566)
                                                               group by s1.FRETCUSTID,s2.FMATERIALID
                                                    union all
                                                       select/*采购入库单分公司*/  t1.FSUPPLIERID,t2.FMATERIALID,sum(t2.FREALQTY)
@@ -191,7 +191,7 @@ namespace KEEPER.K3.TLMB.BOXCAP_FACTORY_MONTHRPT
                                                         inner join t_bd_customer t3 on t3.fsupplierid=t1.fsupplyid
                                                         where t1.FSTOCKORGID = {3} and  t1.FDATE >= to_Date ('{0}','yyyy/MM/dd') and t1.FDATE <= to_Date('{1}','yyyy/MM/dd')
                                                               and t2.FSTOCKID = {4}
-                                                              and (t2.FMATERIALID=07040000 or t2.FMATERIALID=07040004)
+                                                              and (t2.FMATERIALID=2394565 or t2.FMATERIALID=2394566)
                                                               and t3.FPRIMARYGROUP=105322 /*内部105322*/
                                                               group by t1.FSUPPLIERID,t2.FMATERIALID
 
@@ -206,7 +206,7 @@ namespace KEEPER.K3.TLMB.BOXCAP_FACTORY_MONTHRPT
                                                         where d1.FSTOCKORGID = {3}  and d1.FDATE >= to_Date ('{0}','yyyy/MM/dd') and d1.FDATE <= to_Date('{1}','yyyy/MM/dd')  /*上月日期与选择日期*/
                                                               and （d1.FBILLTYPEID ='5d9748dd76f550' or  d1.FBILLTYPEID='5d9748bd76f4ca')                           
                                                               and  d3.FDEPT = d1.FDEPTID                                                  
-                                                              and (d2.FMATERIALID=07040000 or d2.FMATERIALID=07040004)
+                                                              and (d2.FMATERIALID=2394565 or d2.FMATERIALID=2394566)
                                                               and  d1.FDEPTID <> null
                                                               and  d1.FCUSTID = null
                                                               group by d1.FDEPTID,d2.FMATERIALID
@@ -218,86 +218,105 @@ namespace KEEPER.K3.TLMB.BOXCAP_FACTORY_MONTHRPT
                                                         where d1.FSTOCKORGID = {3}  and d1.FDATE >= to_Date ('{0}','yyyy/MM/dd') and d1.FDATE <= to_Date('{1}','yyyy/MM/dd')  /*上月日期与选择日期*/
                                                               and （d1.FBILLTYPEID ='5d9748dd76f550' or  d1.FBILLTYPEID='5d9748bd76f4ca')                           
                                                               and  d2.FSTOCKID = {2}                                                                         /*发货仓库=发出仓库*/                                                 
-                                                              and (d2.FMATERIALID=07040000 or d2.FMATERIALID=07040004)
+                                                              and (d2.FMATERIALID=2394565 or d2.FMATERIALID=2394566)
                                                               and  d1.FDEPTID <> null
                                                               and  d1.FCUSTID = null
                                                               group by d1.FCUSTID,d2.FMATERIALID
                                                   
 ", lastString, selectString, outStockId, nowOrgId);
 
-            string sql4 = string.Format(@"/*dialect*/ select/*直接调拨单*/ d1.FSALEDEPTID ,d2.FSRCMATERIALID,sum(d2.FQTY) as sum1                 /*销售部门，物料编码，sum(调拨数量) */
+            string sql4 = string.Format(@"/*dialect*/ 
+                          select sum(sum1) from 
+                                (
+                                            select/*直接调拨单*/ d1.FSALEDEPTID ,d2.FSRCMATERIALID,sum(d2.FQTY) as sum1                 /*销售部门，物料编码，sum(调拨数量) */
                                                         from T_STK_STKTRANSFERIN d1                                                       /*直接调拨单单据头*/
                                                         inner join T_STK_STKTRANSFERINENTRY d2 on d2.fid = d1.fid                         /*直接调拨单单据体*/
                                                         where d1.FSTOCKOUTORGID = {3}  and d1.FDATE < to_Date ('{0}','yyyy/MM/dd')
                                                               and （d1.FALLOCATETYPE =0 or  d1.FALLOCATETYPE=1)                           /*调拨类型 */
                                                               and  d2.FSRCSTOCKID={2}                                                     /*调出仓库*/
-                                                              and (d2.FSRCMATERIALID=07040000 or d2.FSRCMATERIALID=07040004)
+                                                              and (d2.FSRCMATERIALID=2394565 or d2.FSRCMATERIALID=2394566)
                                                               group by d1.FSALEDEPTID,d2.FSRCMATERIALID
-
-
-                                                       select/*直接调拨单*/ d1.FSALEDEPTID ,d2.FSRCMATERIALID,sum(d2.FQTY) as sum2                 /*销售部门，物料编码，sum(调拨数量) */
+                                        union all 
+                                                                       
+                                            select/*直接调拨单*/ d1.FSALEDEPTID ,d2.FSRCMATERIALID,-sum(d2.FQTY) as sum1                 /*销售部门，物料编码，sum(调拨数量) */
                                                         from T_STK_STKTRANSFERIN d1                                                       /*直接调拨单单据头*/
                                                         inner join T_STK_STKTRANSFERINENTRY d2 on d2.fid = d1.fid                         /*直接调拨单单据体*/
                                                         where d1.FSTOCKOUTORGID = {3}  and d1.FDATE < to_Date ('{0}','yyyy/MM/dd')
                                                               and （d1.FALLOCATETYPE =0 or  d1.FALLOCATETYPE=4)                           /*调拨类型 */
                                                               and  d2.FDESTSTOCKID={4}                                                     /*调入仓库*/
-                                                              and (d2.FSRCMATERIALID=07040000 or d2.FSRCMATERIALID=07040004)
+                                                              and (d2.FSRCMATERIALID=2394565 or d2.FSRCMATERIALID=2394566)
                                                               group by d1.FSALEDEPTID,d2.FSRCMATERIALID
-
-                                                       select/*其他出库单(分销站丢箱)*/ d1.FDEPTID ,d2.FMATERIALID,sum(d2.FQTY)                  
+                                        union all
+                                
+                                            select/*其他出库单(分销站丢箱)*/ d1.FDEPTID ,d2.FMATERIALID,-sum(d2.FQTY) as sum1                  
                                                         from T_STK_MISDELIVERY d1                                                       
                                                         inner join T_STK_MISDELIVERYENTRY d2 on d2.fid = d1.fid                         
                                                         inner join t_bd_stock d3 on d3.fstockid=d2.fstockid
                                                         where d1.FSTOCKORGID = {3}  and d1.FDATE < to_Date ('{0}','yyyy/MM/dd')
-                                                              and （d1.FBILLTYPEID ='5d9748dd76f550' or  d1.FBILLTYPEID='5d9748bd76f4ca')                           
+                                                              and （d1.FBILLTYPEID ='5d9748dd76f550' or  d1.FBILLTYPEID='5d9748bd76f4ca')                      
                                                               and  d3.FDEPT = d1.FDEPTID                                                  
-                                                              and (d2.FMATERIALID=07040000 or d2.FMATERIALID=07040004)
+                                                              and (d2.FMATERIALID=2394565 or d2.FMATERIALID=2394566)
                                                               and  d1.FDEPTID <> null
                                                               and  d1.FCUSTID = null
-                                                              group by d1.FDEPTID,d2.FMATERIALID
-                                                   union all 
-                                                      select/*销售出库单KA客户*/  s1.FCUSTOMERID,s2.FMATERIALID,sum(s2.FREALQTY)
+                                                              group by d1.FDEPTID,d2.FMATERIALID                                         /*领料部门*/    
+                                                              )
+                                            group by FSaleDeptId,FSRCMATERIALID
+                                                   
+
+                 union all 
+                            select sum(sum1) from (
+                                               select/*销售出库单KA客户*/  s1.FCUSTOMERID,s2.FMATERIALID,sum(s2.FREALQTY) as sum1
                                                         from T_SAL_OUTSTOCK s1
                                                         inner join T_SAL_OUTSTOCKENTRY s2 on s1.fid=s2.fid
                                                         where s1.FSALEORGID = {3} and  s1.FDATE < to_Date ('{0}','yyyy/MM/dd')
                                                               and s2.FSTOCKID = {2}
-                                                              and (s2.FMATERIALID=07040000 or s2.FMATERIALID=07040004)
+                                                              and (s2.FMATERIALID=2394565 or s2.FMATERIALID=2394566)
                                                               group by s1.FCUSTOMERID,s2.FMATERIALID
+                                                union all    
 
-
-                                                      select/*销售退货（KA客户）*/  s1.FRETCUSTID,s2.FMATERIALID,sum(s2.FREALQTY)
+                                                      select/*销售退货（KA客户）*/  s1.FRETCUSTID,s2.FMATERIALID,sum(s2.FREALQTY) as sum1
                                                         from T_SAL_RETURNSTOCK s1
                                                         inner join T_SAL_RETURNSTOCKENTRY s2 on s1.fid=s2.fid
                                                         where s1.FSALEORGID = {3} and  s1.FDATE < to_Date ('{0}','yyyy/MM/dd')
                                                               and s2.FSTOCKID = {4}
-                                                              and (s2.FMATERIALID=07040000 or s2.FMATERIALID=07040004)
+                                                              and (s2.FMATERIALID=2394565 or s2.FMATERIALID=2394566)
                                                               group by s1.FRETCUSTID,s2.FMATERIALID
-
-                                                   union all
-                                                      select/*销售出库单分公司*/  t1.FCUSTOMERID,t2.FMATERIALID,sum(t2.FREALQTY)
+                                                union all
+                                                       select/*其他出库单(KA客户丢箱)*/ d1.FCUSTID ,d2.FMATERIALID,sum(d2.FQTY)  as sum1               
+                                                        from T_STK_MISDELIVERY d1                                                       
+                                                        inner join T_STK_MISDELIVERYENTRY d2 on d2.fid = d1.fid                         
+                                                        inner join t_bd_stock d3 on d3.fstockid=d2.fstockid
+                                                        where d1.FSTOCKORGID = {3}  and d1.FDATE < to_Date ('{5}','yyyy/MM/dd') 
+                                                              and （d1.FBILLTYPEID ='5d9748dd76f550' or  d1.FBILLTYPEID='5d9748bd76f4ca')                           
+                                                              and  d2.FSTOCKID = {2}                                                                         /*发货仓库=发出仓库*/                                                 
+                                                              and (d2.FMATERIALID=2394565 or d2.FMATERIALID=2394566)
+                                                              and  d1.FDEPTID <> null
+                                                              and  d1.FCUSTID = null
+                                                              group by d1.FCUSTID,d2.FMATERIALID
+                                                  ) group by FCUSTOMERID,FMATERIALID
+                 union all 
+                             select sum(sum1) from (                   
+                                                      select/*销售出库单分公司*/  t1.FCUSTOMERID,t2.FMATERIALID,sum(t2.FREALQTY) as sum1
                                                         from T_SAL_OUTSTOCK t1
                                                         inner join T_SAL_OUTSTOCKENTRY t2 on t1.fid=t2.fid
                                                         where t1.FSALEORGID = {3} and  t1.FDATE < to_Date ('{0}','yyyy/MM/dd')
                                                               and t2.FSTOCKID = {2}
-                                                              and (t2.FMATERIALID=07040000 or t2.FMATERIALID=07040004)
+                                                              and (t2.FMATERIALID=2394565 or t2.FMATERIALID=2394566)
                                                               and t1.FSALEDEPTID = 0/*工厂*/
                                                               group by t1.FCUSTOMERID,t2.FMATERIALID
-
-                                                      select/*采购入库单分公司*/  t1.FSUPPLIERID,t2.FMATERIALID,sum(t2.FREALQTY)
+                                                  union all 
+                                                      select/*采购入库单分公司*/  t1.FSUPPLIERID,t2.FMATERIALID,sum(t2.FREALQTY) as sum1
                                                         from t_STK_InStock t1
                                                         inner join T_STK_INSTOCKENTRY t2 on t1.fid=t2.fid
                                                         /*关联供应商表，查询为内部供应商的*/
                                                         inner join t_bd_customer t3 on t3.fsupplierid=t1.fsupplyid
                                                         where t1.FSTOCKORGID = {3} and  t1.FDATE < to_Date ('{0}','yyyy/MM/dd')
                                                               and t2.FSTOCKID = {3}
-                                                              and (t2.FMATERIALID=07040000 or t2.FMATERIALID=07040004)
+                                                              and (t2.FMATERIALID=2394565 or t2.FMATERIALID=2394566)
                                                               and t3.FPRIMARYGROUP=105322 /*内部105322*/
                                                               group by t1.FSUPPLIERID,t2.FMATERIALID
-
-
-
-", nowDateString, selectString, outStockId, nowOrgId,returnStockId);
-
+                                                    ) group by  FCUSTOMERID,FMATERIALID
+", nowDateString, selectString, outStockId, nowOrgId, returnStockId,lastString);
 
             DBUtils.Execute(base.Context, sql);
             DBUtils.Execute(base.Context, sql2);
