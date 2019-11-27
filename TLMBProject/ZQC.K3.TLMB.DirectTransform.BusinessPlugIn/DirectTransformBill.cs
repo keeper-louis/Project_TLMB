@@ -85,7 +85,7 @@ namespace ZQC.K3.TLMB.DirectTransform.BusinessPlugIn
                                         {
                                             DynamicObject material = this.Model.GetValue("FMaterialId", i) as DynamicObject;
                                             if (material != null)
-                                            {
+                                            {  
                                                 if (material["Number"].Equals("07040000") || material["Number"].Equals("07040004"))
                                                 {
                                                     this.Model.SetValue("FDestStockId", BasicObject1, i);

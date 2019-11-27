@@ -4,6 +4,7 @@ using Kingdee.BOS.App.Data;
 using Kingdee.BOS.Contracts;
 using Kingdee.BOS.Contracts.Report;
 using Kingdee.BOS.Core.Report;
+using Kingdee.BOS.Orm.DataEntity;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -91,6 +92,134 @@ namespace KEEPER.K3.TLBM.BOXCAP_CHECKRPT
             //     {2}
             //from {1}", tableName, tempTable, KSQL_SEQ);
             DBUtils.Execute(base.Context, strsql);
+
+            #region ZQC
+            //过滤条件
+            DynamicObject dyFilter = filter.FilterParameter.CustomFilter;
+            //过滤条件   分销站/ka客户
+            string kaOrFxz = Convert.ToString(dyFilter["F_PAEZ_RadioGroup"]);
+            //过滤条件   获取当前组织
+            DynamicObject nowOrg = dyFilter["F_PAEZ_OrgId"] as DynamicObject;
+            long nowOrgId = Convert.ToInt64(nowOrg["Id"]);
+            //过滤条件 获取发出仓库
+            DynamicObject outStock = dyFilter["F_PAEZ_OUTSTOCK"] as DynamicObject;
+            long outStockId = Convert.ToInt64(outStock["Id"]);
+            //过滤条件 获取分销站
+            DynamicObject Fxz=dyFilter["F_PAEZ_Dept"] as DynamicObject;
+            long FxzId = Convert.ToInt64(Fxz["Id"]);
+            //过滤条件 获取KA客户
+            DynamicObject Ka = dyFilter["F_PAEZ_KA"] as DynamicObject;
+            long KaId = Convert.ToInt64(Fxz["Id"]);
+            //过滤条件 获取返箱仓库
+            DynamicObject returnStock = dyFilter["F_PAEZ_InStock"] as DynamicObject;
+            long returnStockId = Convert.ToInt64(returnStock["Id"]);
+            #region  日期过滤
+            //当前日期月份
+            DateTime nowDate = Convert.ToDateTime(dyFilter["F_PAEZ_Date"]);
+            int nowYear = Convert.ToInt32(nowDate.Year);
+            int nowMouth = Convert.ToInt32(nowDate.Month);
+            int nowDay = Convert.ToInt32(nowDate.Day);
+            string nowYearString = Convert.ToString(nowYear);
+            string nowMouthString = Convert.ToString(nowMouth);
+            string nowDayString = Convert.ToString(nowDay);
+            string nowDateString = nowYearString + "/" + nowMouthString + "/" + nowDayString;
+            //上月日期月份
+            int lastYear = nowYear - 1;
+            int lastMouth;
+            string lastYearString;
+            string lastMouthString;
+            string lastString;
+            //所选日期月份
+            string selectString;
+            selectString = nowYear + "/" + nowMouth + "/" + 20;//选择月第20号
+            DateTime last;
+            DateTime select = Convert.ToDateTime(selectString);
+            //如果月份为1月，年份减一 12月
+            if (nowMouth <= 1)
+            {
+                lastMouth = 12;
+                lastYearString = Convert.ToString(lastYear);
+                lastMouthString = Convert.ToString(lastMouth);
+                lastString = Convert.ToString(lastYearString + "/" + lastMouthString + "/" + 21);
+                last = Convert.ToDateTime(lastString);
+            }
+            else
+            {
+                lastMouth = nowMouth - 1;
+                lastYearString = Convert.ToString(nowYear);
+                lastMouthString = Convert.ToString(lastMouth);
+                lastString = Convert.ToString(lastYearString + "/" + lastMouthString + "/" + 21);
+                last = Convert.ToDateTime(lastString);
+            }
+            #endregion
+            #region   sql编写
+            //工厂-分销站
+            if (kaOrFxz.Equals("1"))
+            {
+                # region 工厂发箱
+                string sql = string.Format(@"/*dialect*/  select/*直接调拨单*/ d1.FDATE,d1.FSALEDEPTID ,d2.FSRCMATERIALID,sum(d2.FQTY)                  /*销售部门，物料编码，sum(调拨数量) */
+                                                        from T_STK_STKTRANSFERIN d1                                                       /*直接调拨单单据头*/
+                                                        inner join T_STK_STKTRANSFERINENTRY d2 on d2.fid = d1.fid                         /*直接调拨单单据体*/
+                                                        where d1.FSTOCKOUTORGID = {3}  and d1.FDATE >= to_Date ('{0}','yyyy/MM/dd') and d1.FDATE <= to_Date('{1}','yyyy/MM/dd')  /*上月日期与选择日期*/
+                                                              and （d1.FALLOCATETYPE =0 or  d1.FALLOCATETYPE=1)                           /*调拨类型 */
+                                                              and  d2.FSRCSTOCKID={2}                                                     /*调出仓库*/
+                                                              and (d2.FSRCMATERIALID=2394565 or d2.FSRCMATERIALID=2394566)
+                                                              and d1.FSALEDEPTID = {4}
+                                                              group by d1.FDATE,d1.FSALEDEPTID,d2.FSRCMATERIALID", lastString,selectString, outStockId,nowOrgId, FxzId);
+                DBUtils.Execute(base.Context, sql);
+                #endregion
+                #region 返厂箱数
+                string sql2 = string.Format(@"/*dialect*/  select/*直接调拨单*/ d1.FDATE,d2.FSRCMATERIALID,sum(d2.FQTY)                  /*销售部门，物料编码，sum(调拨数量) */
+                                                        from T_STK_STKTRANSFERIN d1                                                       /*直接调拨单单据头*/
+                                                        inner join T_STK_STKTRANSFERINENTRY d2 on d2.fid = d1.fid                         /*直接调拨单单据体*/
+                                                        where d1.FSTOCKOUTORGID = {3}  and d1.FDATE >= to_Date ('{0}','yyyy/MM/dd') and d1.FDATE <= to_Date('{1}','yyyy/MM/dd')  /*上月日期与选择日期*/
+                                                              and （d1.FALLOCATETYPE =0 or  d1.FALLOCATETYPE=4)                           /*调拨类型 */
+                                                              and  d2.FDESTSTOCKID={2}                                                     /*调入仓库*/
+                                                              and (d2.FSRCMATERIALID=2394565 or d2.FSRCMATERIALID=2394566)
+                                                              and d1.FSALEDEPTID = {4}
+                                                              group by d1.FDATE,d2.FSRCMATERIALID", lastString, selectString, outStockId, nowOrgId, FxzId);
+                DBUtils.Execute(base.Context, sql2);
+                #endregion
+
+
+
+
+            }
+            else if (kaOrFxz.Equals("2"))//工厂-KA客户
+            {
+                
+                #region 工厂发箱
+                string sql = string.Format(@"/*dialect*/ 
+                                                        select/*销售出库单KA客户*/  s1.FDATE,s2.FMATERIALID,sum(s2.FREALQTY)
+                                                        from T_SAL_OUTSTOCK s1
+                                                        inner join T_SAL_OUTSTOCKENTRY s2 on s1.fid=s2.fid
+                                                        where s1.FSALEORGID = {3} and  s1.FDATE >= to_Date ('{0}','yyyy/MM/dd') and s1.FDATE <= to_Date('{1}','yyyy/MM/dd')
+                                                              and s2.FSTOCKID = {2}
+                                                              and (s2.FMATERIALID=2394565 or s2.FMATERIALID=2394566)
+                                                              and s1.FCUSTOMERID={4}
+                                                              group by s1.FDATE,s2.FMATERIALID", lastString, selectString, returnStockId, nowOrgId,KaId);
+                DBUtils.Execute(base.Context, sql);
+                #endregion
+                #region 返厂箱数
+                string sql2 = string.Format(@"/*dialect*/ 
+                                                        select/*销售退货*/  s1.FDATE,s2.FMATERIALID,sum(s2.FREALQTY)
+                                                        from T_SAL_RETURNSTOCK s1
+                                                        inner join T_SAL_RETURNSTOCKENTRY s2 on s1.fid=s2.fid
+                                                        where s1.FSALEORGID = {3} and  s1.FDATE >= to_Date ('{0}','yyyy/MM/dd') and s1.FDATE <= to_Date('{1}','yyyy/MM/dd')
+                                                              and s2.FSTOCKID = {2}
+                                                              and (s2.FMATERIALID=2394565 or s2.FMATERIALID=2394566)
+                                                              and   s1.FRETCUSTID = {4}  /*退货客户=KA客户*/
+                                                              group by s1.FRETCUSTID,s2.FMATERIALID,s1.FDATE", lastString,selectString, returnStockId, nowOrgId,KaId);
+                DBUtils.Execute(base.Context, sql2);
+
+                #endregion
+            }
+            #endregion
+
+
+
+
+            #endregion
 
         }
 

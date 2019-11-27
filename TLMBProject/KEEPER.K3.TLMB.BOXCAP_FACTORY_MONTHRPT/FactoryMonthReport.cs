@@ -136,8 +136,8 @@ namespace KEEPER.K3.TLMB.BOXCAP_FACTORY_MONTHRPT
             }
 
 
-           
-            
+
+            //本期发出
             string sql = string.Format(@"/*dialect*/  select/*直接调拨单*/ d1.FSALEDEPTID ,d2.FSRCMATERIALID,sum(d2.FQTY)                  /*销售部门，物料编码，sum(调拨数量) */
                                                         from T_STK_STKTRANSFERIN d1                                                       /*直接调拨单单据头*/
                                                         inner join T_STK_STKTRANSFERINENTRY d2 on d2.fid = d1.fid                         /*直接调拨单单据体*/
@@ -166,7 +166,7 @@ namespace KEEPER.K3.TLMB.BOXCAP_FACTORY_MONTHRPT
                                         
 
 ", lastString, selectString, outStockId,nowOrgId);
-
+            //本期返箱
             string sql2 = string.Format(@"/*dialect*/  select/*直接调拨单*/ d1.FSALEDEPTID ,d2.FSRCMATERIALID,sum(d2.FQTY)                  /*销售部门，物料编码，sum(调拨数量) */
                                                         from T_STK_STKTRANSFERIN d1                                                       /*直接调拨单单据头*/
                                                         inner join T_STK_STKTRANSFERINENTRY d2 on d2.fid = d1.fid                         /*直接调拨单单据体*/
@@ -198,7 +198,7 @@ namespace KEEPER.K3.TLMB.BOXCAP_FACTORY_MONTHRPT
 ", lastString, selectString, returnStockId, nowOrgId,outStockId);
 
 
-
+            //市场丢箱
             string sql3 = string.Format(@"/*dialect*/  select/*其他出库单(分销站丢箱)*/ d1.FDEPTID ,d2.FMATERIALID,sum(d2.FQTY)                  
                                                         from T_STK_MISDELIVERY d1                                                       
                                                         inner join T_STK_MISDELIVERYENTRY d2 on d2.fid = d1.fid                         
@@ -224,7 +224,7 @@ namespace KEEPER.K3.TLMB.BOXCAP_FACTORY_MONTHRPT
                                                               group by d1.FCUSTID,d2.FMATERIALID
                                                   
 ", lastString, selectString, outStockId, nowOrgId);
-
+            //前期库存
             string sql4 = string.Format(@"/*dialect*/ 
                           select sum(sum1) from 
                                 (
@@ -286,7 +286,7 @@ namespace KEEPER.K3.TLMB.BOXCAP_FACTORY_MONTHRPT
                                                         from T_STK_MISDELIVERY d1                                                       
                                                         inner join T_STK_MISDELIVERYENTRY d2 on d2.fid = d1.fid                         
                                                         inner join t_bd_stock d3 on d3.fstockid=d2.fstockid
-                                                        where d1.FSTOCKORGID = {3}  and d1.FDATE < to_Date ('{5}','yyyy/MM/dd') 
+                                                        where d1.FSTOCKORGID = {3}  and d1.FDATE < to_Date ('{0}','yyyy/MM/dd') 
                                                               and （d1.FBILLTYPEID ='5d9748dd76f550' or  d1.FBILLTYPEID='5d9748bd76f4ca')                           
                                                               and  d2.FSTOCKID = {2}                                                                         /*发货仓库=发出仓库*/                                                 
                                                               and (d2.FMATERIALID=2394565 or d2.FMATERIALID=2394566)
@@ -311,17 +311,22 @@ namespace KEEPER.K3.TLMB.BOXCAP_FACTORY_MONTHRPT
                                                         /*关联供应商表，查询为内部供应商的*/
                                                         inner join t_bd_customer t3 on t3.fsupplierid=t1.fsupplyid
                                                         where t1.FSTOCKORGID = {3} and  t1.FDATE < to_Date ('{0}','yyyy/MM/dd')
-                                                              and t2.FSTOCKID = {3}
+                                                              and t2.FSTOCKID = {2}
                                                               and (t2.FMATERIALID=2394565 or t2.FMATERIALID=2394566)
                                                               and t3.FPRIMARYGROUP=105322 /*内部105322*/
                                                               group by t1.FSUPPLIERID,t2.FMATERIALID
                                                     ) group by  FCUSTOMERID,FMATERIALID
-", nowDateString, selectString, outStockId, nowOrgId, returnStockId,lastString);
-
-            DBUtils.Execute(base.Context, sql);
-            DBUtils.Execute(base.Context, sql2);
-            DBUtils.Execute(base.Context, sql3);
-            DBUtils.Execute(base.Context, sql4);
+", lastString, selectString, outStockId, nowOrgId, returnStockId);
+            //本期库存，前期库存+本期发出-本期返箱-市场丢箱
+            int BQFC=DBUtils.Execute(base.Context, sql);
+            int BQFX=DBUtils.Execute(base.Context, sql2);
+            int SCDX=DBUtils.Execute(base.Context, sql3);
+            int QQKC=DBUtils.Execute(base.Context, sql4);
+            if(BQFC!=-1&& BQFX!=-1&& SCDX!=-1&& QQKC != -1)
+            {
+                int BQKC = QQKC + BQFC - BQFX - SCDX;
+            }
+           
             #endregion
         }
 
