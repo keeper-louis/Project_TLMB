@@ -15,7 +15,7 @@ using System.Threading.Tasks;
 namespace KEEPER.K3.TLBM.BOXCAP_CHECKRPT
 {
     [Description("箱套日盘点表")]
-    public class BoxcapCheckReport: SysReportBaseService
+    public class BoxcapCheckReport : SysReportBaseService
     {
         string tempTable = string.Empty;
         /// <summary>
@@ -105,7 +105,7 @@ namespace KEEPER.K3.TLBM.BOXCAP_CHECKRPT
             DynamicObject outStock = dyFilter["F_PAEZ_OUTSTOCK"] as DynamicObject;
             long outStockId = Convert.ToInt64(outStock["Id"]);
             //过滤条件 获取分销站
-            DynamicObject Fxz=dyFilter["F_PAEZ_Dept"] as DynamicObject;
+            DynamicObject Fxz = dyFilter["F_PAEZ_Dept"] as DynamicObject;
             long FxzId = Convert.ToInt64(Fxz["Id"]);
             //过滤条件 获取KA客户
             DynamicObject Ka = dyFilter["F_PAEZ_KA"] as DynamicObject;
@@ -165,7 +165,7 @@ namespace KEEPER.K3.TLBM.BOXCAP_CHECKRPT
                                                               and  d2.FSRCSTOCKID={2}                                                     /*调出仓库*/
                                                               and (d2.FSRCMATERIALID=2394565 or d2.FSRCMATERIALID=2394566)
                                                               and d1.FSALEDEPTID = {4}
-                                                              group by d1.FDATE,d1.FSALEDEPTID,d2.FSRCMATERIALID", lastString,selectString, outStockId,nowOrgId, FxzId);
+                                                              group by d1.FDATE,d1.FSALEDEPTID,d2.FSRCMATERIALID", lastString, selectString, outStockId, nowOrgId, FxzId);
                 DBUtils.Execute(base.Context, sql);
                 #endregion
                 #region 返厂箱数
@@ -180,14 +180,69 @@ namespace KEEPER.K3.TLBM.BOXCAP_CHECKRPT
                                                               group by d1.FDATE,d2.FSRCMATERIALID", lastString, selectString, outStockId, nowOrgId, FxzId);
                 DBUtils.Execute(base.Context, sql2);
                 #endregion
-
-
+                #region 市场丢箱
+                string sql3 = string.Format(@"/*dialect*/
+                                                        select/*其他出库单(分销站丢箱)*/ d1.FDATE ,d2.FMATERIALID,sum(d2.FQTY)                  
+                                                        from T_STK_MISDELIVERY d1                                                       
+                                                        inner join T_STK_MISDELIVERYENTRY d2 on d2.fid = d1.fid                         
+                                                        inner join t_bd_stock d3 on d3.fstockid=d2.fstockid
+                                                        where d1.FSTOCKORGID = {3}  and d1.FDATE >= to_Date ('{0}','yyyy/MM/dd') and d1.FDATE <= to_Date('{1}','yyyy/MM/dd')  /*上月日期与选择日期*/
+                                                              and （d1.FBILLTYPEID ='5d9748dd76f550' or  d1.FBILLTYPEID='5d9748bd76f4ca')                           
+                                                              and  d3.FDEPT = d1.FDEPTID                                                  
+                                                              and (d2.FMATERIALID=2394565 or d2.FMATERIALID=2394566)
+                                                              and  d1.FDEPTID = {4}
+                                                              and  d1.FCUSTID = null
+                                                              group by d1.FDEPTID,d2.FMATERIALID,d1.FDATE", lastString, selectString, returnStockId, nowOrgId, FxzId);
+                DBUtils.Execute(base.Context, sql3);
+                #endregion
+                #region 前期库存，前期发出-前期返箱-前期市场丢货
+                //前期库存
+                string sql4 = string.Format(@"/*dialect*/ 
+                          select sum(sum1) from 
+                                (
+                                        select/*直接调拨单*/ d2.FSRCMATERIALID,sum(d2.FQTY) as sum1                 /*销售部门，物料编码，sum(调拨数量) */
+                                                        from T_STK_STKTRANSFERIN d1                                                       /*直接调拨单单据头*/
+                                                        inner join T_STK_STKTRANSFERINENTRY d2 on d2.fid = d1.fid                         /*直接调拨单单据体*/
+                                                        where d1.FSTOCKOUTORGID = {2}  and d1.FDATE < to_Date ('{0}','yyyy/MM/dd') 
+                                                              and （d1.FALLOCATETYPE =0 or  d1.FALLOCATETYPE=1)                           /*调拨类型 */
+                                                              and  d2.FSRCSTOCKID={1}                                                     /*调出仓库*/
+                                                              and (d2.FSRCMATERIALID=2394565 or d2.FSRCMATERIALID=2394566)
+                                                              and d1.FSALEDEPTID = {3}
+                                                              group by d2.FSRCMATERIALID
+                                        union all 
+                                                                       
+                                            select/*直接调拨单*/ d2.FSRCMATERIALID,-sum(d2.FQTY) as sum1                  /*销售部门，物料编码，sum(调拨数量) */
+                                                        from T_STK_STKTRANSFERIN d1                                                       /*直接调拨单单据头*/
+                                                        inner join T_STK_STKTRANSFERINENTRY d2 on d2.fid = d1.fid                         /*直接调拨单单据体*/
+                                                        where d1.FSTOCKOUTORGID = {2}  and d1.FDATE < to_Date ('{0}','yyyy/MM/dd') 
+                                                              and （d1.FALLOCATETYPE =0 or  d1.FALLOCATETYPE=4)                           /*调拨类型 */
+                                                              and  d2.FDESTSTOCKID={4}                                                     /*调入仓库*/
+                                                              and (d2.FSRCMATERIALID=2394565 or d2.FSRCMATERIALID=2394566)
+                                                              and d1.FSALEDEPTID = {3}
+                                                              group by d2.FSRCMATERIALID
+                                        union all
+                                
+                                            select/*其他出库单(分销站丢箱)*/ d2.FMATERIALID,-sum(d2.FQTY) as sum1                  
+                                                        from T_STK_MISDELIVERY d1                                                       
+                                                        inner join T_STK_MISDELIVERYENTRY d2 on d2.fid = d1.fid                         
+                                                        inner join t_bd_stock d3 on d3.fstockid=d2.fstockid
+                                                        where d1.FSTOCKORGID = {2}  and d1.FDATE < to_Date ('{0}','yyyy/MM/dd') 
+                                                              and （d1.FBILLTYPEID ='5d9748dd76f550' or  d1.FBILLTYPEID='5d9748bd76f4ca')                      
+                                                              and  d3.FDEPT = d1.FDEPTID                                                  
+                                                              and (d2.FMATERIALID=2394565 or d2.FMATERIALID=2394566)
+                                                              and  d1.FDEPTID ={3}
+                                                              and  d1.FCUSTID = null
+                                                              group by d2.FMATERIALID                                     /*领料部门*/    
+                                                              )
+                                            group by FSRCMATERIALID", lastString, outStockId, nowOrgId, FxzId,returnStockId);
+                DBUtils.Execute(base.Context, sql4);
+                #endregion
 
 
             }
             else if (kaOrFxz.Equals("2"))//工厂-KA客户
             {
-                
+
                 #region 工厂发箱
                 string sql = string.Format(@"/*dialect*/ 
                                                         select/*销售出库单KA客户*/  s1.FDATE,s2.FMATERIALID,sum(s2.FREALQTY)
@@ -197,7 +252,7 @@ namespace KEEPER.K3.TLBM.BOXCAP_CHECKRPT
                                                               and s2.FSTOCKID = {2}
                                                               and (s2.FMATERIALID=2394565 or s2.FMATERIALID=2394566)
                                                               and s1.FCUSTOMERID={4}
-                                                              group by s1.FDATE,s2.FMATERIALID", lastString, selectString, returnStockId, nowOrgId,KaId);
+                                                              group by s1.FDATE,s2.FMATERIALID", lastString, selectString, returnStockId, nowOrgId, KaId);
                 DBUtils.Execute(base.Context, sql);
                 #endregion
                 #region 返厂箱数
@@ -209,9 +264,60 @@ namespace KEEPER.K3.TLBM.BOXCAP_CHECKRPT
                                                               and s2.FSTOCKID = {2}
                                                               and (s2.FMATERIALID=2394565 or s2.FMATERIALID=2394566)
                                                               and   s1.FRETCUSTID = {4}  /*退货客户=KA客户*/
-                                                              group by s1.FRETCUSTID,s2.FMATERIALID,s1.FDATE", lastString,selectString, returnStockId, nowOrgId,KaId);
+                                                              group by s1.FRETCUSTID,s2.FMATERIALID,s1.FDATE", lastString, selectString, returnStockId, nowOrgId, KaId);
                 DBUtils.Execute(base.Context, sql2);
+                #endregion
+                #region 市场丢箱
+                string sql3 = string.Format(@"/*dialect*/
+                                                        select/*其他出库单(分销站丢箱)*/ d1.FDATE ,d2.FMATERIALID,sum(d2.FQTY)                  
+                                                        from T_STK_MISDELIVERY d1                                                       
+                                                        inner join T_STK_MISDELIVERYENTRY d2 on d2.fid = d1.fid                         
+                                                        inner join t_bd_stock d3 on d3.fstockid=d2.fstockid
+                                                        where d1.FSTOCKORGID = {3}  and d1.FDATE >= to_Date ('{0}','yyyy/MM/dd') and d1.FDATE <= to_Date('{1}','yyyy/MM/dd')  /*上月日期与选择日期*/
+                                                              and （d1.FBILLTYPEID ='5d9748dd76f550' or  d1.FBILLTYPEID='5d9748bd76f4ca')                           
+                                                              and  d3.FDEPT = d1.FDEPTID                                                  
+                                                              and (d2.FMATERIALID=2394565 or d2.FMATERIALID=2394566)
+                                                              and  d1.FDEPTID = null
+                                                              and  d1.FCUSTID = {4}
+                                                              group by d1.FDEPTID,d2.FMATERIALID,d1.FDATE", lastString, selectString, returnStockId, nowOrgId, KaId);
+                DBUtils.Execute(base.Context, sql3);
+                #endregion
+                #region 前期库存，前期发出-前期返箱-前期市场丢货
+                //前期库存
+                string sql4 = string.Format(@"/*dialect*/ 
+                          select sum(sum1) from (
+                                               select/*销售出库单KA客户*/ s2.FMATERIALID,sum(s2.FREALQTY) as sum1
+                                                        from T_SAL_OUTSTOCK s1
+                                                        inner join T_SAL_OUTSTOCKENTRY s2 on s1.fid=s2.fid
+                                                        where s1.FSALEORGID = {2} and  s1.FDATE < to_Date ('{0}','yyyy/MM/dd')
+                                                              and s2.FSTOCKID = {1}
+                                                              and (s2.FMATERIALID=2394565 or s2.FMATERIALID=2394566)
+                                                              and s1.FCUSTOMERID = {3}
+                                                              group by s2.FMATERIALID
+                                                union all    
 
+                                                      select/*销售退货（KA客户）*/ s2.FMATERIALID,sum(s2.FREALQTY) as sum1
+                                                        from T_SAL_RETURNSTOCK s1
+                                                        inner join T_SAL_RETURNSTOCKENTRY s2 on s1.fid=s2.fid
+                                                        where s1.FSALEORGID = {2} and  s1.FDATE < to_Date ('{0}','yyyy/MM/dd')
+                                                              and s2.FSTOCKID = {4}
+                                                              and (s2.FMATERIALID=2394565 or s2.FMATERIALID=2394566)
+                                                              and s1.FRETCUSTID = {3}
+                                                              group by s2.FMATERIALID
+                                                union all
+                                                       select/*其他出库单(KA客户丢箱)*/ d2.FMATERIALID,sum(d2.FQTY)  as sum1               
+                                                        from T_STK_MISDELIVERY d1                                                       
+                                                        inner join T_STK_MISDELIVERYENTRY d2 on d2.fid = d1.fid                         
+                                                        inner join t_bd_stock d3 on d3.fstockid=d2.fstockid
+                                                        where d1.FSTOCKORGID = {2}  and d1.FDATE < to_Date ('{0}','yyyy/MM/dd') 
+                                                              and （d1.FBILLTYPEID ='5d9748dd76f550' or  d1.FBILLTYPEID='5d9748bd76f4ca')                           
+                                                              and  d2.FSTOCKID = {1}                                                                         /*发货仓库=发出仓库*/                                                 
+                                                              and (d2.FMATERIALID=2394565 or d2.FMATERIALID=2394566)
+                                                              and  d1.FDEPTID = null
+                                                              and  d1.FCUSTID = {3}
+                                                              group by d2.FMATERIALID
+                                                  ) group by FMATERIALID", lastString, outStockId, nowOrgId, KaId,returnStockId);
+                DBUtils.Execute(base.Context, sql4);
                 #endregion
             }
             #endregion
@@ -219,7 +325,7 @@ namespace KEEPER.K3.TLBM.BOXCAP_CHECKRPT
 
 
 
-            #endregion
+
 
         }
 
@@ -270,5 +376,7 @@ from dual", tempTable);
         {
             return ServiceHelper.GetService<IDBService>().CreateTemporaryTableName(context);
         }
+        
     }
 }
+#endregion

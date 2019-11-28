@@ -69,19 +69,92 @@ namespace ZQC.K3.TLMB.SalOutStock.BussinessPlugIn
                         }
                         //this.View.Model.CreateNewEntryRow("FEntity");//新增
                         //根据组织查询对应 箱套
-                        string sql2 = string.Format(@"select fmaterialid from t_bd_material where fnumber='07040000' and fuseorgid={0}", useOrgId);
-                        long result = DBUtils.ExecuteScalar<long>(base.Context, sql2, -1, null);
-                        if (result != 0 && result != -1)
+                        if (slx != 0)
                         {
-                            IMetaDataService metaService = ServiceHelper.GetService<IMetaDataService>();//元数据服务
-                            IViewService view = ServiceHelper.GetService<IViewService>();//界面服务
-                            FormMetadata Meta = metaService.Load(base.Context, "BD_MATERIAL") as FormMetadata;//获取基础资料元数据
-                            DynamicObject BasicObject = view.LoadSingle(base.Context, result, Meta.BusinessInfo.GetDynamicObjectType());
-                            this.Model.BatchCreateNewEntryRow("FEntity",1);
-                            this.Model.SetValue("MaterialId", BasicObject,entrys.Count);
+                            string sql2 = string.Format(@"select FMATERIALID from t_bd_material where fnumber='07040000' and fuseorgid={0}", useOrgId);
+                            long result = DBUtils.ExecuteScalar<long>(base.Context, sql2, -1, null);
+                            if (result != 0 && result != -1)
+                            {
+                                IMetaDataService metaService = ServiceHelper.GetService<IMetaDataService>();//元数据服务
+                                IViewService view = ServiceHelper.GetService<IViewService>();//界面服务
+                                FormMetadata Meta = metaService.Load(base.Context, "BD_MATERIAL") as FormMetadata;//获取基础资料元数据
+                                DynamicObject BasicObject = view.LoadSingle(base.Context, result, Meta.BusinessInfo.GetDynamicObjectType());
+                                // 填写字段值
+                                DynamicObjectCollection materialStock = BasicObject["MaterialStock"] as DynamicObjectCollection;
+                                DynamicObjectCollection materialBase = BasicObject["MaterialBase"] as DynamicObjectCollection;
+                                foreach (DynamicObject base1 in materialStock)
+                                {
+                                    long materialId = Convert.ToInt64(BasicObject["Id"]);
+                                    DynamicObject unit = base1["StoreUnitID"] as DynamicObject;
+                                    long unitId = Convert.ToInt64(unit["Id"]);
+                                    this.Model.BatchCreateNewEntryRow("FEntity", 1);
+                                    //之前一行
+                                    DynamicObject before = entrys[entrys.Count - 2] as DynamicObject;
+                                    //新增分录行
+                                    DynamicObject end=entrys[entrys.Count-1] as DynamicObject;
+                                    DynamicObject stock = before["StockID"] as DynamicObject;
+                                    long stockID = Convert.ToInt64( stock["Id"]);
+
+                                    end["MaterialID"] = BasicObject;
+                                    end["MaterialID_Id"] = materialId;
+                                    end["UnitID"] = unit;
+                                    end["UnitID_Id"] = unitId;
+                                    end["RealQty"] = slx;
+                                    end["StockID"] = stock;
+                                    end["StockID_Id"] = stockID;
+                                    end["BaseUnitQty"] = slx;
+
+                                    //this.Model.SetValue("MaterialID", BasicObject, entrys.Count);
+                                    //this.Model.SetValue("UnitID", unitId, entrys.Count);
+                                    //this.Model.SetValue("RealQty", slx, entrys.Count);
+                                }
+                            }
+
                         }
 
-                           
+                        if (pmx != 0)
+                        {
+                            string sql2 = string.Format(@"select FMATERIALID from t_bd_material where fnumber='07040004' and fuseorgid={0}", useOrgId);
+                            long result = DBUtils.ExecuteScalar<long>(base.Context, sql2, -1, null);
+                            if (result != 0 && result != -1)
+                            {
+                                IMetaDataService metaService = ServiceHelper.GetService<IMetaDataService>();//元数据服务
+                                IViewService view = ServiceHelper.GetService<IViewService>();//界面服务
+                                FormMetadata Meta = metaService.Load(base.Context, "BD_MATERIAL") as FormMetadata;//获取基础资料元数据
+                                DynamicObject BasicObject = view.LoadSingle(base.Context, result, Meta.BusinessInfo.GetDynamicObjectType());
+                                // 填写字段值
+                                DynamicObjectCollection materialStock = BasicObject["MaterialStock"] as DynamicObjectCollection;
+                                DynamicObjectCollection materialBase = BasicObject["MaterialBase"] as DynamicObjectCollection;
+                                foreach (DynamicObject base1 in materialStock)
+                                {
+                                    long materialId = Convert.ToInt64(BasicObject["Id"]);
+                                    DynamicObject unit = base1["StoreUnitID"] as DynamicObject;
+                                    long unitId = Convert.ToInt64(unit["Id"]);
+                                    this.Model.BatchCreateNewEntryRow("FEntity", 1);
+                                    //之前一行
+                                    DynamicObject before = entrys[entrys.Count - 2] as DynamicObject;
+                                    //新增分录行
+                                    DynamicObject end = entrys[entrys.Count - 1] as DynamicObject;
+                                    DynamicObject stock = before["StockID"] as DynamicObject;
+                                    long stockID = Convert.ToInt64(stock["Id"]);
+
+                                    end["MaterialID"] = BasicObject;
+                                    end["MaterialID_Id"] = materialId;
+                                    end["UnitID"] = unit;
+                                    end["UnitID_Id"] = unitId;
+                                    end["RealQty"] = slx;
+                                    end["StockID"] = stock;
+                                    end["StockID_Id"] = stockID;
+                                    end["BaseUnitQty"] = slx;
+
+                                    //this.Model.SetValue("MaterialID", BasicObject, entrys.Count);
+                                    //this.Model.SetValue("UnitID", unitId, entrys.Count);
+                                    //this.Model.SetValue("RealQty", slx, entrys.Count);
+                                }
+                            }
+                        }
+
+
 
                     }
                     
