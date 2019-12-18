@@ -189,7 +189,7 @@ select seq,
                                                         from T_STK_STKTRANSFERIN d1                                                       /*直接调拨单单据头*/
                                                         inner join T_STK_STKTRANSFERINENTRY d2 on d2.fid = d1.fid                         /*直接调拨单单据体*/
                                                         inner join  t_bd_material m3 on d2.fmaterialid = m3.fmaterialid
-														inner join t_bd_department_l m4 on m4.fdeptid = d1.fsaledeptid
+														inner join T_TL_LINE_L m4 on  m4.fid  = d1.fline
                                                         where d1.FSTOCKOUTORGID = {3}  and d1.FDATE >= to_Date ('{0}','yyyy/MM/dd') and d1.FDATE <= to_Date('{1}','yyyy/MM/dd')  /*上月日期与选择日期*/
                                                               and （d1.FALLOCATETYPE =0 or  d1.FALLOCATETYPE=2)                           /*调拨类型 */
                                                               and  d2.FSRCSTOCKID={2}                                                     /*调出仓库*/
@@ -245,47 +245,47 @@ select seq,
        0 F_PAEZ_BXFZXS,
        0 F_PAEZ_BXDXS,
        0 F_PAEZ_BXBQKC  from (
-                                                      select/*直接调拨单*/   m4.fname F_PAEZ_XL,sum(d2.FQTY) F_PAEZ_BXFXZFX
+                                                  select/*直接调拨单*/   m4.fname F_PAEZ_XL,sum(d2.FQTY) F_PAEZ_LXFZXS
                                                         from T_STK_STKTRANSFERIN d1                                                       /*直接调拨单单据头*/
                                                         inner join T_STK_STKTRANSFERINENTRY d2 on d2.fid = d1.fid                         /*直接调拨单单据体*/
                                                         inner join  t_bd_material m3 on d2.fmaterialid = m3.fmaterialid
 														inner join T_TL_LINE_L m4 on  m4.fid  = d1.fline
                                                         where d1.FSTOCKOUTORGID = {3}  and d1.FDATE >= to_Date ('{0}','yyyy/MM/dd') and d1.FDATE <= to_Date('{1}','yyyy/MM/dd')  /*上月日期与选择日期*/
                                                               and  d1.FALLOCATETYPE =0                    /*调拨类型 */
-                                                              and  d2.FSRCSTOCKID={2}                                                     /*调出仓库*/
-                                                               and ( m3.fnumber='07040004'  and m3.fuseorgid={3})
+                                                              and  d2.FDESTSTOCKID={2}                                                     /*调入仓库*/
+                                                               and ( m3.fnumber='07040000'  and m3.fuseorgid={3})
                                                               and d1.FSALEDEPTID ={5}
                                                               and d1.FLINE<>null
                                                               group by m4.fname)
                         group by F_PAEZ_XL
-", lastString, selectString, outStockId, nowOrgId, tempTable1, FxzId);
+", lastString, selectString, outStockId, nowOrgId, tempTable3, FxzId);
             DBUtils.Execute(base.Context, sql2LX);
-            string sql2BX = string.Format(@"insert into {4}
+            string sql2BX = string.Format(@"/*dialect*/insert into {4}
        select  
        0 seq,
        F_PAEZ_XL,
        0 F_PAEZ_LXQQKC,
        0 F_PAEZ_LXFXZFX,
-       0 F_PAEZ_LXFZXS,
+       sum(F_PAEZ_LXFZXS) F_PAEZ_LXFZXS,
        0 F_PAEZ_LXDXS,
        0 F_PAEZ_LXBQKC,
        0 F_PAEZ_BXQQKC,
        0 F_PAEZ_BXFXZFX,
-       sum(F_PAEZ_BXFZXS) F_PAEZ_BXFZXS,
+       0 F_PAEZ_BXFZXS,
        0 F_PAEZ_BXDXS,
        0 F_PAEZ_BXBQKC  from (
-                                                      select/*销售退货（KA客户）*/  m4.fname as F_PAEZ_XL,sum(s2.FREALQTY) as F_PAEZ_BXFZXS
-                                                        from T_SAL_RETURNSTOCK s1
-                                                        inner join T_SAL_RETURNSTOCKENTRY s2 on s1.fid=s2.fid
-                                                        inner join  t_bd_material m3 on s2.fmaterialid = m3.fmaterialid
-                                                        inner join t_bd_customer_l m4 on m4.fcustid = s1.fretcustid
-                                                        where s1.FSALEORGID = {3} and  s1.FDATE  >= to_Date ('{0}','yyyy/MM/dd') and s1.FDATE <= to_Date('{1}','yyyy/MM/dd')
-                                                              and s2.FSTOCKID = {2}
-                                                              and s1.FRETURNTYPE0 = 2
-                                                              and s1.FSALEDEPTID = {5}
-                                                              and s1.FLINE = {6}
-                                                              and ( m3.fnumber='07040004' and m3.fuseorgid={3})
-                                                              group by m4.fname     )
+                                                  select/*直接调拨单*/   m4.fname F_PAEZ_XL,sum(d2.FQTY) F_PAEZ_LXFZXS
+                                                        from T_STK_STKTRANSFERIN d1                                                       /*直接调拨单单据头*/
+                                                        inner join T_STK_STKTRANSFERINENTRY d2 on d2.fid = d1.fid                         /*直接调拨单单据体*/
+                                                        inner join  t_bd_material m3 on d2.fmaterialid = m3.fmaterialid
+														inner join T_TL_LINE_L m4 on  m4.fid  = d1.fline
+                                                        where d1.FSTOCKOUTORGID = {3}  and d1.FDATE >= to_Date ('{0}','yyyy/MM/dd') and d1.FDATE <= to_Date('{1}','yyyy/MM/dd')  /*上月日期与选择日期*/
+                                                              and  d1.FALLOCATETYPE =0                    /*调拨类型 */
+                                                              and  d2.FDESTSTOCKID={2}                                                     /*调入仓库*/
+                                                               and ( m3.fnumber='07040004'  and m3.fuseorgid={3})
+                                                              and d1.FSALEDEPTID ={5}
+                                                              and d1.FLINE<>null
+                                                              group by m4.fname)
                         group by F_PAEZ_XL
 ", lastString, selectString, outStockId, nowOrgId, tempTable4, FxzId);
             DBUtils.Execute(base.Context, sql2BX);
@@ -310,17 +310,15 @@ select seq,
                                                         inner join T_STK_MISDELIVERYENTRY d2 on d2.fid = d1.fid                         
                                                         inner join t_bd_stock d3 on d3.fstockid=d2.fstockid
                                                         inner join  t_bd_material m3 on d2.fmaterialid = m3.fmaterialid
-                                                        inner join t_bd_customer_l m4 on m4.fcustid = d1.FCUSTID
+                                                        inner join T_TL_LINE_L m4 on  m4.fid  = d1.f_paez_line
                                                         where d1.FSTOCKORGID = {3}  and d1.FDATE >= to_Date ('{0}','yyyy/MM/dd') and d1.FDATE <= to_Date('{1}','yyyy/MM/dd')
-                                                              and （d1.FBILLTYPEID ='5d9748dd76f550' or  d1.FBILLTYPEID='5d9748bd76f4ca')                           
-                                                              and  d2.FSTOCKID = {2}                                                                         /*发货仓库=发出仓库*/                                                 
+                                                              and （d1.FBILLTYPEID ='5d9748dd76f550' or  d1.FBILLTYPEID='5d9748bd76f4ca')                                              
                                                               and ( m3.fnumber='07040000' and m3.fuseorgid={3})
                                                               and  d1.FDEPTID = {5}
                                                               and  d1.FCUSTID = null
-                                                              and  d1.F_PAEZ_LINE = {6}
                                                               group by m4.fname    )
                         group by F_PAEZ_XL
-", lastString, selectString, outStockId, nowOrgId, tempTable5, FxzId);
+", lastString, selectString, null, nowOrgId, tempTable5, FxzId);
             DBUtils.Execute(base.Context, sql3LX);
             string sql3BX = string.Format(@"/*dialect*/insert into {4}
        select  
@@ -341,17 +339,15 @@ select seq,
                                                         inner join T_STK_MISDELIVERYENTRY d2 on d2.fid = d1.fid                         
                                                         inner join t_bd_stock d3 on d3.fstockid=d2.fstockid
                                                         inner join  t_bd_material m3 on d2.fmaterialid = m3.fmaterialid
-                                                        inner join t_bd_customer_l m4 on m4.fcustid = d1.FCUSTID
+                                                        inner join T_TL_LINE_L m4 on  m4.fid  = d1.f_paez_line
                                                         where d1.FSTOCKORGID = {3}  and d1.FDATE >= to_Date ('{0}','yyyy/MM/dd') and d1.FDATE <= to_Date('{1}','yyyy/MM/dd')
-                                                              and （d1.FBILLTYPEID ='5d9748dd76f550' or  d1.FBILLTYPEID='5d9748bd76f4ca')                           
-                                                              and  d2.FSTOCKID = {2}                                                                         /*发货仓库=发出仓库*/                                                 
+                                                              and （d1.FBILLTYPEID ='5d9748dd76f550' or  d1.FBILLTYPEID='5d9748bd76f4ca')                                              
                                                               and ( m3.fnumber='07040004' and m3.fuseorgid={3})
                                                               and  d1.FDEPTID = {5}
                                                               and  d1.FCUSTID = null
-                                                              and  d1.F_PAEZ_LINE = {6}
                                                               group by m4.fname    )
                         group by F_PAEZ_XL
-", lastString, selectString, outStockId, nowOrgId, tempTable6, FxzId);
+", lastString, selectString, null, nowOrgId, tempTable6, FxzId);
             DBUtils.Execute(base.Context, sql3BX);
             #endregion
             #region 前期库存，前期发出-前期返箱-前期市场丢货
@@ -372,32 +368,33 @@ select seq,
        0 F_PAEZ_BXDXS,
        0 F_PAEZ_BXBQKC  from (
                             select F_PAEZ_XL,sum(F_PAEZ_LXQQKC) F_PAEZ_LXQQKC from (
-                                                       select  /*销售出库单KA客户*/ m4.fname F_PAEZ_XL,sum(t2.FREALQTY) F_PAEZ_LXQQKC
-                                                        from T_SAL_OUTSTOCK t1
-                                                        inner join T_SAL_OUTSTOCKENTRY t2 on t1.fid=t2.fid
-                                                        inner join  t_bd_material m3 on t2.fmaterialid = m3.fmaterialid
-                                                        inner join t_bd_customer_l m4 on m4.fcustid = t1.fcustomerid
-                                                        where t1.FSALEORGID = {3} and  t1.FDATE < to_Date ('{0}','yyyy/MM/dd')
-                                                              and t2.FSTOCKID = {2}
-                                                              and ( m3.fnumber='07040000'  and m3.fuseorgid={3})
-                                                              and t1.FSALEDEPTID = {5}
-                                                              and t1.FLINE = {6}
-                                                              group by t1.FCUSTOMERID,t2.FMATERIALID,m4.fname
+                                                      select/*直接调拨单*/   m4.fname F_PAEZ_XL,sum(d2.FQTY) F_PAEZ_LXQQKC
+                                                        from T_STK_STKTRANSFERIN d1                                                       /*直接调拨单单据头*/
+                                                        inner join T_STK_STKTRANSFERINENTRY d2 on d2.fid = d1.fid                         /*直接调拨单单据体*/
+                                                        inner join  t_bd_material m3 on d2.fmaterialid = m3.fmaterialid
+														inner join T_TL_LINE_L m4 on  m4.fid  = d1.fline
+                                                        where d1.FSTOCKOUTORGID = {3}  and d1.FDATE < to_Date ('{0}','yyyy/MM/dd') 
+                                                              and （d1.FALLOCATETYPE =0 or  d1.FALLOCATETYPE=2)                           /*调拨类型 */
+                                                              and  d2.FSRCSTOCKID={2}                                                     /*调出仓库*/
+                                                               and ( m3.fnumber='07040000'  and m3.fuseorgid={3})
+                                                              and d1.FSALEDEPTID ={5}
+                                                              and d1.FLINE<>null
+                                                              group by m4.fname
                                                 union all    
-                                                      select/*销售退货（KA客户）*/  m4.fname as F_PAEZ_XL,-sum(s2.FREALQTY) as F_PAEZ_LXQQKC
-                                                        from T_SAL_RETURNSTOCK s1
-                                                        inner join T_SAL_RETURNSTOCKENTRY s2 on s1.fid=s2.fid
-                                                        inner join  t_bd_material m3 on s2.fmaterialid = m3.fmaterialid
-                                                        inner join t_bd_customer_l m4 on m4.fcustid = s1.fretcustid
-                                                        where s1.FSALEORGID = {3} and  s1.FDATE < to_Date ('{0}','yyyy/MM/dd')
-                                                              and s2.FSTOCKID = {2}
-                                                              and s1.FRETURNTYPE0 = 2
-                                                              and s1.FSALEDEPTID = {5}
-                                                              and s1.FLINE = {6}
-                                                              and ( m3.fnumber='07040000' and m3.fuseorgid={3})
-                                                              group by m4.fname    
+                                                      select/*直接调拨单*/   m4.fname F_PAEZ_XL,sum(d2.FQTY) F_PAEZ_LXQQKC
+                                                        from T_STK_STKTRANSFERIN d1                                                       /*直接调拨单单据头*/
+                                                        inner join T_STK_STKTRANSFERINENTRY d2 on d2.fid = d1.fid                         /*直接调拨单单据体*/
+                                                        inner join  t_bd_material m3 on d2.fmaterialid = m3.fmaterialid
+														inner join T_TL_LINE_L m4 on  m4.fid  = d1.fline
+                                                        where d1.FSTOCKOUTORGID = {3}  and d1.FDATE < to_Date ('{0}','yyyy/MM/dd') 
+                                                              and （d1.FALLOCATETYPE =0)                           /*调拨类型 */
+                                                              and  d2.FDESTSTOCKID={2}                                                     /*调出仓库*/
+                                                               and ( m3.fnumber='07040000'  and m3.fuseorgid={3})
+                                                              and d1.FSALEDEPTID ={5}
+                                                              and d1.FLINE<>null
+                                                              group by m4.fname   
                                                 union all
-                                                       select/*其他出库单(KA客户丢箱)*/ m4.fname as F_PAEZ_XL,sum(d2.FQTY)  as F_PAEZ_LXQQKC              
+                                                       select/*其他出库单(KA客户丢箱)*/ m4.fname as F_PAEZ_XL,sum(d2.FQTY)  F_PAEZ_LXQQKC              
                                                         from T_STK_MISDELIVERY d1                                                       
                                                         inner join T_STK_MISDELIVERYENTRY d2 on d2.fid = d1.fid                         
                                                         inner join t_bd_stock d3 on d3.fstockid=d2.fstockid
@@ -408,8 +405,7 @@ select seq,
                                                               and  d2.FSTOCKID = {2}                                                                         /*发货仓库=发出仓库*/                                                 
                                                               and ( m3.fnumber='07040000' and m3.fuseorgid={3})
                                                               and  d1.FDEPTID = {5}
-                                                              and  d1.FCUSTID <> null
-                                                              and  d1.F_PAEZ_LINE = {6}
+                                                              and  d1.FCUSTID = null
                                                               group by m4.fname 
                                                   ) group by F_PAEZ_XL
                 
@@ -433,32 +429,33 @@ select seq,
        0 F_PAEZ_BXDXS,
        0 F_PAEZ_BXBQKC  from (
                             select F_PAEZ_XL,sum(F_PAEZ_BXQQKC) F_PAEZ_BXQQKC from (
-                                                       select  /*销售出库单KA客户*/ m4.fname F_PAEZ_XL,sum(t2.FREALQTY) F_PAEZ_BXQQKC
-                                                        from T_SAL_OUTSTOCK t1
-                                                        inner join T_SAL_OUTSTOCKENTRY t2 on t1.fid=t2.fid
-                                                        inner join  t_bd_material m3 on t2.fmaterialid = m3.fmaterialid
-                                                        inner join t_bd_customer_l m4 on m4.fcustid = t1.fcustomerid
-                                                        where t1.FSALEORGID = {3} and  t1.FDATE < to_Date ('{0}','yyyy/MM/dd')
-                                                              and t2.FSTOCKID = {2}
-                                                              and ( m3.fnumber='07040004'  and m3.fuseorgid={3})
-                                                              and t1.FSALEDEPTID = {5}
-                                                              and t1.FLINE = {6}
-                                                              group by t1.FCUSTOMERID,t2.FMATERIALID,m4.fname
+                                                      select/*直接调拨单*/   m4.fname F_PAEZ_XL,sum(d2.FQTY) F_PAEZ_BXQQKC
+                                                        from T_STK_STKTRANSFERIN d1                                                       /*直接调拨单单据头*/
+                                                        inner join T_STK_STKTRANSFERINENTRY d2 on d2.fid = d1.fid                         /*直接调拨单单据体*/
+                                                        inner join  t_bd_material m3 on d2.fmaterialid = m3.fmaterialid
+														inner join T_TL_LINE_L m4 on  m4.fid  = d1.fline
+                                                        where d1.FSTOCKOUTORGID = {3}  and d1.FDATE < to_Date ('{0}','yyyy/MM/dd') 
+                                                              and （d1.FALLOCATETYPE =0 or  d1.FALLOCATETYPE=2)                           /*调拨类型 */
+                                                              and  d2.FSRCSTOCKID={2}                                                     /*调出仓库*/
+                                                               and ( m3.fnumber='07040004'  and m3.fuseorgid={3})
+                                                              and d1.FSALEDEPTID ={5}
+                                                              and d1.FLINE<>null
+                                                              group by m4.fname
                                                 union all    
-                                                      select/*销售退货（KA客户）*/  m4.fname as F_PAEZ_XL,-sum(s2.FREALQTY) as F_PAEZ_BXQQKC
-                                                        from T_SAL_RETURNSTOCK s1
-                                                        inner join T_SAL_RETURNSTOCKENTRY s2 on s1.fid=s2.fid
-                                                        inner join  t_bd_material m3 on s2.fmaterialid = m3.fmaterialid
-                                                        inner join t_bd_customer_l m4 on m4.fcustid = s1.fretcustid
-                                                        where s1.FSALEORGID = {3} and  s1.FDATE < to_Date ('{0}','yyyy/MM/dd')
-                                                              and s2.FSTOCKID = {2}
-                                                              and s1.FRETURNTYPE0 = 2
-                                                              and s1.FSALEDEPTID = {5}
-                                                              and s1.FLINE = {6}
-                                                              and ( m3.fnumber='07040004' and m3.fuseorgid={3})
-                                                              group by m4.fname    
+                                                      select/*直接调拨单*/   m4.fname F_PAEZ_XL,sum(d2.FQTY) F_PAEZ_BXQQKC
+                                                        from T_STK_STKTRANSFERIN d1                                                       /*直接调拨单单据头*/
+                                                        inner join T_STK_STKTRANSFERINENTRY d2 on d2.fid = d1.fid                         /*直接调拨单单据体*/
+                                                        inner join  t_bd_material m3 on d2.fmaterialid = m3.fmaterialid
+														inner join T_TL_LINE_L m4 on  m4.fid  = d1.fline
+                                                        where d1.FSTOCKOUTORGID = {3}  and d1.FDATE < to_Date ('{0}','yyyy/MM/dd') 
+                                                              and （d1.FALLOCATETYPE =0)                           /*调拨类型 */
+                                                              and  d2.FDESTSTOCKID={2}                                                     /*调出仓库*/
+                                                               and ( m3.fnumber='07040004'  and m3.fuseorgid={3})
+                                                              and d1.FSALEDEPTID ={5}
+                                                              and d1.FLINE<>null
+                                                              group by m4.fname   
                                                 union all
-                                                       select/*其他出库单(KA客户丢箱)*/ m4.fname as F_PAEZ_XL,-sum(d2.FQTY)  as F_PAEZ_BXQQKC              
+                                                       select/*其他出库单(KA客户丢箱)*/ m4.fname as F_PAEZ_XL,sum(d2.FQTY)  F_PAEZ_BXQQKC              
                                                         from T_STK_MISDELIVERY d1                                                       
                                                         inner join T_STK_MISDELIVERYENTRY d2 on d2.fid = d1.fid                         
                                                         inner join t_bd_stock d3 on d3.fstockid=d2.fstockid
@@ -469,8 +466,7 @@ select seq,
                                                               and  d2.FSTOCKID = {2}                                                                         /*发货仓库=发出仓库*/                                                 
                                                               and ( m3.fnumber='07040004' and m3.fuseorgid={3})
                                                               and  d1.FDEPTID = {5}
-                                                              and  d1.FCUSTID <> null
-                                                              and  d1.F_PAEZ_LINE = {6}
+                                                              and  d1.FCUSTID = null
                                                               group by m4.fname 
                                                   ) group by F_PAEZ_XL
                 
