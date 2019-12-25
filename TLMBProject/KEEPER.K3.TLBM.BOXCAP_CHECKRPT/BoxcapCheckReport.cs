@@ -30,10 +30,15 @@ namespace KEEPER.K3.TLBM.BOXCAP_CHECKRPT
         private string tempTable7 = string.Empty;
         private string tempTable8 = string.Empty;
         private string tempTable9 = string.Empty;
+        private string tempTable10 = string.Empty;
         private ArrayList tables = new ArrayList();
         long FxzId;
         long KaId;
         string tempTable = string.Empty;
+        //表头取值备
+        string lxAmount;
+        string bxAmount;
+        int all = 0;
         /// <summary>
         /// 初始化数据
         /// </summary>
@@ -500,80 +505,293 @@ insert into {5}
             {
 
                 #region 工厂发箱
-                string sql = string.Format(@"/*dialect*/ 
-                                                        select/*销售出库单KA客户*/  s1.FDATE,s2.FMATERIALID,sum(s2.FREALQTY)
+                string sqlLX = string.Format(@"/*dialect*/
+insert into {5}
+select 0 seq,
+	   F_PAEZ_Date,
+	   sum(F_PAEZ_LXGCFX) F_PAEZ_LXGCFX,
+	   0 F_PAEZ_LXFCXS,
+	   0 F_PAEZ_LXDXS,
+	   0 F_PAEZ_LXCE,
+	   0 F_PAEZ_BXGCFX,
+	   0 F_PAEZ_BXFCXS,
+       0 F_PAEZ_BXDXS,
+       0 F_PAEZ_BXCE,
+       0 F_PAEZ_GCFXZS,
+       0 F_PAEZ_FCXZS， 
+	   0 F_PAEZ_DXZS，
+	   0 F_PAEZ_ZCE  from( 
+                                                        select/*销售出库单KA客户*/  s1.fdate F_PAEZ_Date,sum(s2.FREALQTY) F_PAEZ_LXGCFX
                                                         from T_SAL_OUTSTOCK s1
                                                         inner join T_SAL_OUTSTOCKENTRY s2 on s1.fid=s2.fid
+														inner join  t_bd_material m3 on s2.fmaterialid = m3.fmaterialid
+                                                        inner join t_bd_customer_l m4 on m4.fcustid = s1.fcustomerid
                                                         where s1.FSALEORGID = {3} and  s1.FDATE >= to_Date ('{0}','yyyy/MM/dd') and s1.FDATE <= to_Date('{1}','yyyy/MM/dd')
-                                                              and s2.FSTOCKID = {2}
-                                                              and (s2.FMATERIALID=2394565 or s2.FMATERIALID=2394566)
+                                                              and ( m3.fnumber='07040000'  and m3.fuseorgid={3})
                                                               and s1.FCUSTOMERID={4}
-                                                              group by s1.FDATE,s2.FMATERIALID", lastString, selectString, returnStockId, nowOrgId, KaId);
-                DBUtils.Execute(base.Context, sql);
+                                                              group by s1.FDATE
+						)group by F_PAEZ_Date", lastString, selectString, returnStockId, nowOrgId, KaId, tempTable1);
+                DBUtils.Execute(base.Context, sqlLX);
+                string sqlBX= string.Format(@"/*dialect*/
+insert into {5}
+select 0 seq,
+	   F_PAEZ_Date,
+	   0 F_PAEZ_LXGCFX,
+	   0 F_PAEZ_LXFCXS,
+	   0 F_PAEZ_LXDXS,
+	   0 F_PAEZ_LXCE,
+	   sum(F_PAEZ_BXGCFX) F_PAEZ_BXGCFX,
+	   0 F_PAEZ_BXFCXS,
+       0 F_PAEZ_BXDXS,
+       0 F_PAEZ_BXCE,
+       0 F_PAEZ_GCFXZS,
+       0 F_PAEZ_FCXZS， 
+	   0 F_PAEZ_DXZS，
+	   0 F_PAEZ_ZCE  from( 
+                                                        select/*销售出库单KA客户*/  s1.fdate F_PAEZ_Date,sum(s2.FREALQTY) F_PAEZ_BXGCFX
+                                                        from T_SAL_OUTSTOCK s1
+                                                        inner join T_SAL_OUTSTOCKENTRY s2 on s1.fid=s2.fid
+														inner join  t_bd_material m3 on s2.fmaterialid = m3.fmaterialid
+                                                        inner join t_bd_customer_l m4 on m4.fcustid = s1.fcustomerid
+                                                        where s1.FSALEORGID = {3} and  s1.FDATE >= to_Date ('{0}','yyyy/MM/dd') and s1.FDATE <= to_Date('{1}','yyyy/MM/dd')
+                                                              and ( m3.fnumber='07040004'  and m3.fuseorgid={3})
+                                                              and s1.FCUSTOMERID={4}
+                                                              group by s1.FDATE
+						)group by F_PAEZ_Date", lastString, selectString, returnStockId, nowOrgId, KaId, tempTable2);
+                DBUtils.Execute(base.Context, sqlBX);
                 #endregion
                 #region 返厂箱数
-                string sql2 = string.Format(@"/*dialect*/ 
-                                                        select/*销售退货*/  s1.FDATE,s2.FMATERIALID,sum(s2.FREALQTY)
+                string sql2LX= string.Format(@"/*dialect*/ 
+insert into {5}
+select 0 seq,
+	   F_PAEZ_Date,
+	   0 F_PAEZ_LXGCFX,
+	   sum(F_PAEZ_LXFCXS) F_PAEZ_LXFCXS,
+	   0 F_PAEZ_LXDXS,
+	   0 F_PAEZ_LXCE,
+	   0 F_PAEZ_BXGCFX,
+	   0 F_PAEZ_BXFCXS,
+       0 F_PAEZ_BXDXS,
+       0 F_PAEZ_BXCE,
+       0 F_PAEZ_GCFXZS,
+       0 F_PAEZ_FCXZS， 
+	   0 F_PAEZ_DXZS，
+	   0 F_PAEZ_ZCE  from(
+                                                        select/*销售退货*/  s1.FDATE as F_PAEZ_Date,sum(s2.FREALQTY) as F_PAEZ_LXFCXS 
                                                         from T_SAL_RETURNSTOCK s1
                                                         inner join T_SAL_RETURNSTOCKENTRY s2 on s1.fid=s2.fid
+														inner join  t_bd_material m3 on s2.fmaterialid = m3.fmaterialid
                                                         where s1.FSALEORGID = {3} and  s1.FDATE >= to_Date ('{0}','yyyy/MM/dd') and s1.FDATE <= to_Date('{1}','yyyy/MM/dd')
                                                               and s2.FSTOCKID = {2}
-                                                              and (s2.FMATERIALID=2394565 or s2.FMATERIALID=2394566)
+                                                              and ( m3.fnumber='07040000' and m3.fuseorgid={3})
                                                               and   s1.FRETCUSTID = {4}  /*退货客户=KA客户*/
-                                                              group by s1.FRETCUSTID,s2.FMATERIALID,s1.FDATE", lastString, selectString, returnStockId, nowOrgId, KaId);
-                DBUtils.Execute(base.Context, sql2);
+                                                              group by s1.FDATE
+						)group by F_PAEZ_Date", lastString, selectString, returnStockId, nowOrgId, KaId, tempTable3);
+                DBUtils.Execute(base.Context, sql2LX);
+                string sql2BX = string.Format(@"/*dialect*/ 
+insert into {5}
+select 0 seq,
+	   F_PAEZ_Date,
+	   0 F_PAEZ_LXGCFX,
+	   0 F_PAEZ_LXFCXS,
+	   0 F_PAEZ_LXDXS,
+	   0 F_PAEZ_LXCE,
+	   0 F_PAEZ_BXGCFX,
+	   sum(F_PAEZ_BXFCXS) F_PAEZ_BXFCXS,
+       0 F_PAEZ_BXDXS,
+       0 F_PAEZ_BXCE,
+       0 F_PAEZ_GCFXZS,
+       0 F_PAEZ_FCXZS， 
+	   0 F_PAEZ_DXZS，
+	   0 F_PAEZ_ZCE  from(
+                                                        select/*销售退货*/  s1.FDATE as F_PAEZ_Date,sum(s2.FREALQTY) as F_PAEZ_BXFCXS 
+                                                        from T_SAL_RETURNSTOCK s1
+                                                        inner join T_SAL_RETURNSTOCKENTRY s2 on s1.fid=s2.fid
+														inner join  t_bd_material m3 on s2.fmaterialid = m3.fmaterialid
+                                                        where s1.FSALEORGID = {3} and  s1.FDATE >= to_Date ('{0}','yyyy/MM/dd') and s1.FDATE <= to_Date('{1}','yyyy/MM/dd')
+                                                              and s2.FSTOCKID = {2}
+                                                              and ( m3.fnumber='07040004' and m3.fuseorgid={3})
+                                                              and   s1.FRETCUSTID = {4}  /*退货客户=KA客户*/
+                                                              group by s1.FDATE
+						)group by F_PAEZ_Date", lastString, selectString, returnStockId, nowOrgId, KaId, tempTable4);
+                DBUtils.Execute(base.Context, sql2BX);
                 #endregion
                 #region 市场丢箱
-                string sql3 = string.Format(@"/*dialect*/
-                                                        select/*其他出库单(分销站丢箱)*/ d1.FDATE ,d2.FMATERIALID,sum(d2.FQTY)                  
+                string sql3LX= string.Format(@"/*dialect*/
+insert into {5}
+select 0 seq,
+	   F_PAEZ_Date,
+	   0 F_PAEZ_LXGCFX,
+	   0 F_PAEZ_LXFCXS,
+	   sum(F_PAEZ_LXDXS) F_PAEZ_LXDXS,
+	   0 F_PAEZ_LXCE,
+	   0 F_PAEZ_BXGCFX,
+	   0 F_PAEZ_BXFCXS,
+       0 F_PAEZ_BXDXS,
+       0 F_PAEZ_BXCE,
+       0 F_PAEZ_GCFXZS,
+       0 F_PAEZ_FCXZS， 
+	   0 F_PAEZ_DXZS，
+	   0 F_PAEZ_ZCE  from(															  
+                                                        select/*其他出库单(分销站丢箱)*/ d1.FDATE  as F_PAEZ_Date,sum(d2.FQTY) as F_PAEZ_LXDXS                  
                                                         from T_STK_MISDELIVERY d1                                                       
                                                         inner join T_STK_MISDELIVERYENTRY d2 on d2.fid = d1.fid                         
                                                         inner join t_bd_stock d3 on d3.fstockid=d2.fstockid
+														inner join  t_bd_material m3 on d2.fmaterialid = m3.fmaterialid
                                                         where d1.FSTOCKORGID = {3}  and d1.FDATE >= to_Date ('{0}','yyyy/MM/dd') and d1.FDATE <= to_Date('{1}','yyyy/MM/dd')  /*上月日期与选择日期*/
                                                               and （d1.FBILLTYPEID ='5d9748dd76f550' or  d1.FBILLTYPEID='5d9748bd76f4ca')                           
                                                               and  d3.FDEPT = d1.FDEPTID                                                  
-                                                              and (d2.FMATERIALID=2394565 or d2.FMATERIALID=2394566)
+                                                              and ( m3.fnumber='07040000'  and m3.fuseorgid={3})
                                                               and  d1.FDEPTID = null
                                                               and  d1.FCUSTID = {4}
-                                                              group by d1.FDEPTID,d2.FMATERIALID,d1.FDATE", lastString, selectString, returnStockId, nowOrgId, KaId);
-                DBUtils.Execute(base.Context, sql3);
+                                                              group by d1.FDATE)group by F_PAEZ_Date", lastString, selectString, returnStockId, nowOrgId, KaId, tempTable6);
+                DBUtils.Execute(base.Context, sql3LX);
+                string sql3BX = string.Format(@"/*dialect*/
+insert into {5}
+select 0 seq,
+	   F_PAEZ_Date,
+	   0 F_PAEZ_LXGCFX,
+	   0 F_PAEZ_LXFCXS,
+	   0 F_PAEZ_LXDXS,
+	   0 F_PAEZ_LXCE,
+	   0 F_PAEZ_BXGCFX,
+	   0 F_PAEZ_BXFCXS,
+       sum(F_PAEZ_BXDXS) F_PAEZ_BXDXS,
+       0 F_PAEZ_BXCE,
+       0 F_PAEZ_GCFXZS,
+       0 F_PAEZ_FCXZS， 
+	   0 F_PAEZ_DXZS，
+	   0 F_PAEZ_ZCE  from(															  
+                                                        select/*其他出库单(分销站丢箱)*/ d1.FDATE  as F_PAEZ_Date,sum(d2.FQTY) as F_PAEZ_BXDXS                  
+                                                        from T_STK_MISDELIVERY d1                                                       
+                                                        inner join T_STK_MISDELIVERYENTRY d2 on d2.fid = d1.fid                         
+                                                        inner join t_bd_stock d3 on d3.fstockid=d2.fstockid
+														inner join  t_bd_material m3 on d2.fmaterialid = m3.fmaterialid
+                                                        where d1.FSTOCKORGID = {3}  and d1.FDATE >= to_Date ('{0}','yyyy/MM/dd') and d1.FDATE <= to_Date('{1}','yyyy/MM/dd')  /*上月日期与选择日期*/
+                                                              and （d1.FBILLTYPEID ='5d9748dd76f550' or  d1.FBILLTYPEID='5d9748bd76f4ca')                           
+                                                              and  d3.FDEPT = d1.FDEPTID                                                  
+                                                              and ( m3.fnumber='07040004'  and m3.fuseorgid={3})
+                                                              and  d1.FDEPTID = null
+                                                              and  d1.FCUSTID = {4}
+                                                              group by d1.FDATE)group by F_PAEZ_Date", lastString, selectString, returnStockId, nowOrgId, KaId, tempTable6);
+                DBUtils.Execute(base.Context, sql3BX);
                 #endregion
                 #region 前期库存，前期发出-前期返箱-前期市场丢货
                 //前期库存
-                string sql4 = string.Format(@"/*dialect*/ 
-                          select sum(sum1) from (
-                                               select/*销售出库单KA客户*/ s2.FMATERIALID,sum(s2.FREALQTY) as sum1
+                string sql4LX= string.Format(@"/*dialect*/ 
+insert into {5}
+                          select sum(FQIKC) FQIKC from (
+                                               select/*销售出库单KA客户*/ sum(s2.FREALQTY) as FQIKC
                                                         from T_SAL_OUTSTOCK s1
                                                         inner join T_SAL_OUTSTOCKENTRY s2 on s1.fid=s2.fid
+														inner join  t_bd_material m3 on s2.fmaterialid = m3.fmaterialid
                                                         where s1.FSALEORGID = {2} and  s1.FDATE < to_Date ('{0}','yyyy/MM/dd')
                                                               and s2.FSTOCKID = {1}
-                                                              and (s2.FMATERIALID=2394565 or s2.FMATERIALID=2394566)
+                                                              and ( m3.fnumber='07040000'  and m3.fuseorgid={2})
                                                               and s1.FCUSTOMERID = {3}
                                                               group by s2.FMATERIALID
                                                 union all    
 
-                                                      select/*销售退货（KA客户）*/ s2.FMATERIALID,sum(s2.FREALQTY) as sum1
+                                                      select/*销售退货（KA客户）*/ -sum(s2.FREALQTY) as FQIKC
                                                         from T_SAL_RETURNSTOCK s1
                                                         inner join T_SAL_RETURNSTOCKENTRY s2 on s1.fid=s2.fid
+														inner join  t_bd_material m3 on s2.fmaterialid = m3.fmaterialid
                                                         where s1.FSALEORGID = {2} and  s1.FDATE < to_Date ('{0}','yyyy/MM/dd')
                                                               and s2.FSTOCKID = {4}
-                                                              and (s2.FMATERIALID=2394565 or s2.FMATERIALID=2394566)
+                                                              and ( m3.fnumber='07040000'  and m3.fuseorgid={2})
                                                               and s1.FRETCUSTID = {3}
                                                               group by s2.FMATERIALID
                                                 union all
-                                                       select/*其他出库单(KA客户丢箱)*/ d2.FMATERIALID,sum(d2.FQTY)  as sum1               
+                                                       select/*其他出库单(KA客户丢箱)*/ -sum(d2.FQTY)  as FQIKC               
                                                         from T_STK_MISDELIVERY d1                                                       
                                                         inner join T_STK_MISDELIVERYENTRY d2 on d2.fid = d1.fid                         
                                                         inner join t_bd_stock d3 on d3.fstockid=d2.fstockid
+														inner join  t_bd_material m3 on d2.fmaterialid = m3.fmaterialid
                                                         where d1.FSTOCKORGID = {2}  and d1.FDATE < to_Date ('{0}','yyyy/MM/dd') 
                                                               and （d1.FBILLTYPEID ='5d9748dd76f550' or  d1.FBILLTYPEID='5d9748bd76f4ca')                           
                                                               and  d2.FSTOCKID = {1}                                                                         /*发货仓库=发出仓库*/                                                 
-                                                              and (d2.FMATERIALID=2394565 or d2.FMATERIALID=2394566)
+                                                              and ( m3.fnumber='07040000'  and m3.fuseorgid={2})
                                                               and  d1.FDEPTID = null
                                                               and  d1.FCUSTID = {3}
                                                               group by d2.FMATERIALID
-                                                  ) group by FMATERIALID", lastString, outStockId, nowOrgId, KaId, returnStockId);
-                DBUtils.Execute(base.Context, sql4);
+                                                  ) ", lastString, outStockId, nowOrgId, KaId, returnStockId, tempTable7);
+                DBUtils.Execute(base.Context, sql4LX);
+                string sql4BX = string.Format(@"/*dialect*/ 
+insert into {5}
+                          select sum(FQIKC) FQIKC from (
+                                               select/*销售出库单KA客户*/ sum(s2.FREALQTY) as FQIKC
+                                                        from T_SAL_OUTSTOCK s1
+                                                        inner join T_SAL_OUTSTOCKENTRY s2 on s1.fid=s2.fid
+														inner join  t_bd_material m3 on s2.fmaterialid = m3.fmaterialid
+                                                        where s1.FSALEORGID = {2} and  s1.FDATE < to_Date ('{0}','yyyy/MM/dd')
+                                                              and s2.FSTOCKID = {1}
+                                                              and ( m3.fnumber='07040004'  and m3.fuseorgid={2})
+                                                              and s1.FCUSTOMERID = {3}
+                                                              group by s2.FMATERIALID
+                                                union all    
+
+                                                      select/*销售退货（KA客户）*/ -sum(s2.FREALQTY) as FQIKC
+                                                        from T_SAL_RETURNSTOCK s1
+                                                        inner join T_SAL_RETURNSTOCKENTRY s2 on s1.fid=s2.fid
+														inner join  t_bd_material m3 on s2.fmaterialid = m3.fmaterialid
+                                                        where s1.FSALEORGID = {2} and  s1.FDATE < to_Date ('{0}','yyyy/MM/dd')
+                                                              and s2.FSTOCKID = {4}
+                                                              and ( m3.fnumber='07040004'  and m3.fuseorgid={2})
+                                                              and s1.FRETCUSTID = {3}
+                                                              group by s2.FMATERIALID
+                                                union all
+                                                       select/*其他出库单(KA客户丢箱)*/ -sum(d2.FQTY)  as FQIKC               
+                                                        from T_STK_MISDELIVERY d1                                                       
+                                                        inner join T_STK_MISDELIVERYENTRY d2 on d2.fid = d1.fid                         
+                                                        inner join t_bd_stock d3 on d3.fstockid=d2.fstockid
+														inner join  t_bd_material m3 on d2.fmaterialid = m3.fmaterialid
+                                                        where d1.FSTOCKORGID = {2}  and d1.FDATE < to_Date ('{0}','yyyy/MM/dd') 
+                                                              and （d1.FBILLTYPEID ='5d9748dd76f550' or  d1.FBILLTYPEID='5d9748bd76f4ca')                           
+                                                              and  d2.FSTOCKID = {1}                                                                         /*发货仓库=发出仓库*/                                                 
+                                                              and ( m3.fnumber='07040004'  and m3.fuseorgid={2})
+                                                              and  d1.FDEPTID = null
+                                                              and  d1.FCUSTID = {3}
+                                                              group by d2.FMATERIALID
+                                                  ) ", lastString, outStockId, nowOrgId, KaId, returnStockId, tempTable8);
+                DBUtils.Execute(base.Context, sql4BX);
+                #endregion
+                #region 差额
+                //绿箱差额
+                string sql5LX = string.Format(@" /*dialect*/
+                insert into {0}
+                      select  
+       0  seq,
+       finall.F_PAEZ_Date F_PAEZ_Date,
+       0 F_PAEZ_LXGCFX,
+       0 F_PAEZ_LXFCXS,
+       0 F_PAEZ_LXDXS,
+       sum(finall.F_PAEZ_LXGCFX-finall.F_PAEZ_LXFCXS-finall.F_PAEZ_LXDXS) F_PAEZ_LXCE,
+       0 F_PAEZ_BXGCFX,
+       0 F_PAEZ_BXFCXS,
+       0 F_PAEZ_BXDXS,
+       sum(finall.F_PAEZ_BXGCFX-finall.F_PAEZ_BXFCXS-finall.F_PAEZ_BXDXS) F_PAEZ_BXCE,
+       sum(finall.F_PAEZ_LXGCFX+finall.F_PAEZ_BXGCFX) F_PAEZ_GCFXZS,
+       sum(finall.F_PAEZ_LXFCXS+finall.F_PAEZ_BXFCXS) F_PAEZ_FCXZS,
+       sum(finall.F_PAEZ_LXDXS+finall.F_PAEZ_BXDXS) F_PAEZ_DXZS,   
+       sum((finall.F_PAEZ_LXGCFX-finall.F_PAEZ_LXFCXS-finall.F_PAEZ_LXDXS)+(finall.F_PAEZ_BXGCFX-finall.F_PAEZ_BXFCXS-finall.F_PAEZ_BXDXS)) F_PAEZ_ZCE
+                      from  (
+                            select * from {1}
+                            union
+                            select * from {2}
+                            union
+                            select * from {3}
+                            union
+                            select * from {4}
+                            union
+                            select * from {5}
+                            union
+                            select * from {6}
+                         )finall group by finall.F_PAEZ_DATE", tempTable9, tempTable1, tempTable2, tempTable3, tempTable4, tempTable5, tempTable6, tempTable7, tempTable8);
+                DBUtils.Execute(this.Context, sql5LX);
+                #endregion
+                #region 绿箱本期结存
+                string sql6LX = string.Format(@"/*dialect*/ insert into {0}  select sum(F_PAEZ_LXCE) F_PAEZ_LXCE,sum(F_PAEZ_BXCE) F_PAEZ_BXCE from {1}", tempTable10, tempTable9);
+                DBUtils.Execute(this.Context, sql6LX);
                 #endregion
             }
             #region 所有数据插入基表
@@ -606,7 +824,6 @@ insert into {5}
                     select F.* from {6} F
                     union
                     select F.* from {7} F
-
                     ) finall group by finall.F_PAEZ_Date 
 ", tempTable, tempTable1, tempTable2, tempTable3, tempTable4, tempTable5, tempTable6,tempTable9);
             DBUtils.Execute(base.Context, strSql);
@@ -626,6 +843,7 @@ insert into {5}
             this.tempTable7 = addTempTable(base.Context);
             this.tempTable8 = addTempTable(base.Context);
             this.tempTable9 = addTempTable(base.Context);
+            this.tempTable10 = addTempTable(base.Context);
             this.tempTable = addTempTable(base.Context);
             string sqlstr1 = string.Format(@"/*dialect*/create table {0}
 (
@@ -767,6 +985,12 @@ insert into {5}
   F_PAEZ_ZCE                VARCHAR(50)
 )", tempTable9);
             DBUtils.Execute(this.Context, sqlstr9);
+            string sqlstr10 = string.Format(@"/*dialect*/create table {0}
+(
+  F_PAEZ_LXCE               VARCHAR(50),
+  F_PAEZ_BXCE               VARCHAR(50)
+)", tempTable10);
+            DBUtils.Execute(this.Context, sqlstr10);
 
 
             String strSql = String.Format(@"/*dialect*/CREATE TABLE {0}
@@ -835,6 +1059,10 @@ insert into {5}
             DBUtils.Execute(this.Context, delsql9);
             string dropsql09 = string.Format("DROP TABLE {0}", tempTable9);
             DBUtils.Execute(this.Context, dropsql09);
+            string delsql10 = string.Format("TRUNCATE TABLE {0}", tempTable10);
+            DBUtils.Execute(this.Context, delsql10);
+            string dropsql10 = string.Format("DROP TABLE {0}", tempTable10);
+            DBUtils.Execute(this.Context, dropsql10);
         }
         #endregion
         #region 给表头赋值
@@ -851,11 +1079,17 @@ insert into {5}
             }
             string tableTitle = string.Empty;
             string tableTitle1 = string.Empty;
+            string tableTitle2 = string.Empty;
+            string tableTitle3 = string.Empty;
             //绿箱前期库存量
             string sqlLXQCKC = string.Format(@"/*dialect*/ select * from {0}",tempTable7);
             DynamicObjectCollection Lx = DBUtils.ExecuteDynamicObject(this.Context, sqlLXQCKC);
-            string lxAmount =Convert.ToString( Lx[0]["FQIKC"]);
-            if (lxAmount != null)
+            if (Lx.Count>0)
+            {
+                lxAmount = Convert.ToString(Lx[0]["FQIKC"]);
+            }
+            
+            if (lxAmount != "")
             {
                 tableTitle = lxAmount;
             }
@@ -867,8 +1101,11 @@ insert into {5}
             //白箱前期库存量
             string sqlBXQCKC = string.Format(@"/*dialect*/ select * from {0}", tempTable8);
             DynamicObjectCollection Bx = DBUtils.ExecuteDynamicObject(this.Context, sqlBXQCKC);
-            string bxAmount = Convert.ToString(Bx[0]["FQIKC2"]);
-            if (lxAmount != null)
+            if (Bx.Count > 0)
+            {
+                bxAmount = Convert.ToString(Bx[0]["FQIKC2"]);
+            }
+            if (lxAmount != "")
             {
                 tableTitle1 = bxAmount;
             }
@@ -877,6 +1114,40 @@ insert into {5}
                 tableTitle1 = "0";
             }
             result.AddTitle("F_PAEZ_Qikcl2", tableTitle1);
+            //绿箱本期库存量
+            string sqlBQKC = string.Format(@"/*dialect*/ select F_PAEZ_LXCE from {0}", tempTable10);
+            DynamicObjectCollection LxBq = DBUtils.ExecuteDynamicObject(this.Context, sqlBQKC);
+            if (LxBq.Count>0)
+            {
+                int ce=Convert.ToInt32(LxBq[0]["F_PAEZ_LXCE"]);
+                all=Convert.ToInt32(tableTitle)+ce;
+            }
+            if (all > 0)
+            {
+                tableTitle2 = Convert.ToString(all);
+            }
+            else
+            {
+                tableTitle2 = "0";
+            }
+            result.AddTitle("F_PAEZ_Bqjcs", tableTitle2);
+            //白箱本期库存量
+            string sqlBQKC2 = string.Format(@"/*dialect*/ select F_PAEZ_BXCE from {0}", tempTable10);
+            DynamicObjectCollection BxBq = DBUtils.ExecuteDynamicObject(this.Context, sqlBQKC2);
+            if (BxBq.Count > 0)
+            {
+                int ce = Convert.ToInt32(BxBq[0]["F_PAEZ_BXCE"]);
+                all = Convert.ToInt32(tableTitle1) + ce;
+            }
+            if (all > 0)
+            {
+                tableTitle2 = Convert.ToString(all);
+            }
+            else
+            {
+                tableTitle2 = "0";
+            }
+            result.AddTitle("F_PAEZ_Bqjcs2", tableTitle3);
             return result;
         }
         #endregion

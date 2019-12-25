@@ -18,13 +18,18 @@ namespace KEEPER.K3.TLMB.SalOutStock.BusinessPlugIn
         {
             base.DataChanged(e);
             String key = e.Field.Key.ToUpperInvariant();
+            long custId;
+            long orgid;
             //实发数量发生变化，判断是否是赠品，如果是赠品取赠品价格
             if (key == "FREALQTY" && Convert.ToInt32(e.NewValue) != 0)
             {
                 DynamicObject SalOrg = this.Model.GetValue("FSALEORGID") as DynamicObject;
-                long orgid = Convert.ToInt64(SalOrg["id"]);
                 DynamicObject CustObject = this.Model.GetValue("FCustomerID") as DynamicObject;
-                long custId = Convert.ToInt64(CustObject["id"]);
+                if (CustObject!=null && SalOrg!=null)
+                {
+                     custId = Convert.ToInt64(CustObject["id"]);
+                     orgid = Convert.ToInt64(SalOrg["id"]);
+                }
                 Dictionary<int, double> priceDictionary = TLMBServiceHelper.GetPriceDictionary(this.Context, Convert.ToDateTime(this.Model.GetValue("FDate")).ToShortDateString(), custId, orgid);
                 if (this.Model.GetValue("FISTASTE", e.Row) != null && this.Model.GetValue("FISTASTE", e.Row).ToString() != "" && this.Model.GetValue("FISTASTE", e.Row).ToString() != " ")
                 {
